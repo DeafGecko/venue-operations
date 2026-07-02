@@ -12,10 +12,22 @@ export const settingsType = defineType({
             type: 'string', 
             title: 'Venue Name' 
       }),
-      defineField({ 
-            name: 'logo', 
-            type: 'image', 
-            title: 'Logo' 
+      defineField({
+            name: 'logo',
+            type: 'image',
+            title: 'Logo'
+      }),
+      defineField({
+            name: 'logoShape',
+            type: 'string',
+            title: 'Logo Shape',
+            options: {
+                  list: [
+                        { title: 'Square', value: 'square' },
+                        { title: 'Circle', value: 'circle' },
+                  ],
+            },
+            initialValue: 'square',
       }),
             
 // ── Colors ──

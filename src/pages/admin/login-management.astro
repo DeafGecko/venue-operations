@@ -4,10 +4,6 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 import UsersTable from '../../components/admin/UsersTable';
 ---
 
-<AdminLayout title="Login Management">
-  <div class="mb-4">
-    <h2 class="text-xl font-light tracking-wide">Login Management</h2>
-    <p class="text-sm text-[#9ca3af]">Manage admin accounts — roles, passwords, and access</p>
-  </div>
+<AdminLayout title="Login Management" subtitle="Manage admin accounts — roles, passwords, and access">
   <UsersTable client:load />
 </AdminLayout>

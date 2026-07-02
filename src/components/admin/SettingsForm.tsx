@@ -8,6 +8,7 @@ interface Settings {
   venueName: string;
   tagline: string;
   logo?: { asset?: { _ref?: string; url?: string } };
+  logoShape?: 'circle' | 'square';
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
@@ -167,14 +168,34 @@ export default function SettingsForm() {
         {/* Logo */}
         <div>
           <Label>Logo</Label>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {/* Live preview */}
             {settings.logo?.asset?.url && (
-              <img src={settings.logo.asset.url} alt="Logo" className="h-8 w-auto object-contain border border-[#e5e7eb] rounded p-0.5" />
+              <div className={`h-10 w-10 shrink-0 overflow-hidden border border-[#e5e7eb] flex items-center justify-center bg-[#f9fafb] ${(settings.logoShape ?? 'square') === 'circle' ? 'rounded-full' : 'rounded-md'}`}>
+                <img src={settings.logo.asset.url} alt="Logo" className="h-full w-full object-contain" />
+              </div>
             )}
-            <label className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 border border-[#e5e7eb] rounded-md hover:bg-[#f9fafb] text-xs transition">
-              <Image className="w-3.5 h-3.5" /> Upload
-              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-            </label>
+            <div className="flex items-center gap-1.5">
+              <label className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 border border-[#e5e7eb] rounded-md hover:bg-[#f9fafb] text-xs transition">
+                <Image className="w-3.5 h-3.5" /> Upload
+                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+              </label>
+              {(['square', 'circle'] as const).map(shape => (
+                <button
+                  key={shape}
+                  type="button"
+                  onClick={() => setSettings(p => ({ ...p!, logoShape: shape }))}
+                  className={`flex items-center gap-1 px-2 py-1.5 text-[0.6rem] font-medium border rounded-md transition ${
+                    (settings.logoShape ?? 'square') === shape
+                      ? 'border-[#374151] bg-[#374151] text-white'
+                      : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
+                  }`}
+                >
+                  <span className={`w-3 h-3 border border-current shrink-0 ${shape === 'circle' ? 'rounded-full' : 'rounded-sm'}`} />
+                  {shape.charAt(0).toUpperCase() + shape.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         {/* Avatar */}

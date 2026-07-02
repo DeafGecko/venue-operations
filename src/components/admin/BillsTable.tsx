@@ -217,7 +217,7 @@ export default function BillsTable({ initialBookings }: Props) {
                           ? () => handleMarkRefunded(b._id)
                           : () => { setRecordingId(b._id); setPaymentAmount(balance > 0 ? balance : 0); setError(null); }}
                         disabled={effectiveStatus === 'paid'}
-                        className={`w-full h-7 rounded-md text-xs font-medium transition ${effectiveStatus === 'unpaid' || effectiveStatus === 'partial' ? 'btn-primary' : effectiveStatus === 'credit' ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100' : 'bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed'}`}>
+                        className={`w-full h-7 rounded-md text-xs font-medium transition ${effectiveStatus === 'unpaid' || effectiveStatus === 'partial' ? 'btn-primary' : effectiveStatus === 'credit' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed'}`}>
                         {effectiveStatus === 'paid' ? 'Fully Paid' : effectiveStatus === 'credit' ? 'Mark Refunded' : 'Record Payment'}
                       </button>
                     )}

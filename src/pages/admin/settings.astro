@@ -6,13 +6,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 import SettingsForm from '../../components/admin/SettingsForm';
 ---
 
-<AdminLayout title="Settings">
-      <div class="mb-6">
-            <h2 class="text-xl font-light tracking-wide">Site Settings</h2>
-            <p class="text-sm text-[#8e8e93]">Manage venue branding, colors, fees, and contact info.</p>
-      </div>
-
-      <div class="bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-4">
+<AdminLayout title="Settings" subtitle="Manage venue branding, colors, fees, and contact info.">
+      <div class="bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-4 overflow-y-auto max-h-[calc(100vh-11rem)]">
         <SettingsForm client:load />
       </div>
 </AdminLayout>

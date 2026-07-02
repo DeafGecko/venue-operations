@@ -77,6 +77,7 @@ const c = {
   avatar: settings?.adminAvatar || null,
   font: settings?.fontFamily || defaults.font,
   logo: settings?.logo?.asset?.url || defaults.logo,
+  logoShape: (settings?.logoShape || 'square') as 'circle' | 'square',
   venueName: settings?.venueName || defaults.venueName,
   tagline: settings?.tagline || defaults.tagline,
 };
@@ -291,6 +292,17 @@ const activePath = Astro.url.pathname;
       html.dark input[type="number"]::-webkit-inner-spin-button,
       html.dark input[type="number"]::-webkit-outer-spin-button {
         filter: invert(0.7) brightness(1.5);
+      }
+
+      /* Textarea resize handle */
+      textarea::-webkit-resizer {
+        border: 8px solid transparent;
+        border-bottom-color: #d1d5db;
+        border-right-color: #d1d5db;
+      }
+      html.dark textarea::-webkit-resizer {
+        border-bottom-color: #4b5563;
+        border-right-color: #4b5563;
       }
 
       /* Icons — make lucide strokes lighter */
@@ -523,11 +535,13 @@ const activePath = Astro.url.pathname;
         <header class="px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5 min-w-0">
-              <img
-                src={c.logo}
-                alt={c.venueName}
-                class="h-10 w-10 object-contain shrink-0"
-              />
+              <div class={`h-10 w-10 shrink-0 overflow-hidden bg-white/10 flex items-center justify-center ${c.logoShape === 'circle' ? 'rounded-full' : 'rounded-md'}`}>
+                <img
+                  src={c.logo}
+                  alt={c.venueName}
+                  class="h-full w-full object-contain"
+                />
+              </div>
               <div class="min-w-0">
                 <p class="text-[0.9rem] font-semibold leading-tight truncate" style="color: var(--admin-sidebar-text);">{c.venueName}</p>
                 <p class="text-[0.70rem] leading-tight truncate sidebar-muted">{c.tagline}</p>

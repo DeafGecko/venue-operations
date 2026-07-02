@@ -1,6 +1,8 @@
 // src/components/admin/CustomSelect.tsx
 // Reusable styled dropdown — use anywhere instead of <select>
+// Dropdown renders via React portal so overflow:hidden ancestors never clip it
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 
 export interface SelectOption {
@@ -37,15 +39,43 @@ export default function CustomSelect({
   id,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const current = options.find(o => o.value === value);
 
+  // Position the portal dropdown to align with the trigger button
+  const updatePosition = () => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    setDropdownStyle({
+      position: 'fixed',
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+    });
+  };
+
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    if (open) updatePosition();
+  }, [open]);
+
+  // Close on outside click or scroll
+  useEffect(() => {
+    const close = (e: MouseEvent) => {
+      if (
+        !triggerRef.current?.contains(e.target as Node) &&
+        !dropdownRef.current?.contains(e.target as Node)
+      ) setOpen(false);
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const closeOnScroll = () => setOpen(false);
+    document.addEventListener('mousedown', close);
+    window.addEventListener('scroll', closeOnScroll, true);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      window.removeEventListener('scroll', closeOnScroll, true);
+    };
   }, []);
 
   const handleSelect = (opt: SelectOption) => {
@@ -54,14 +84,15 @@ export default function CustomSelect({
   };
 
   return (
-    <div ref={ref} className={`relative ${className}`}>
+    <div className={`relative ${className}`}>
       {/* Trigger */}
       <button
+        ref={triggerRef}
         id={id}
         type="button"
         disabled={disabled}
-        onClick={() => !disabled && setOpen(o => !o)}
-        className="w-full h-9.5 border border-[#e5e7eb] rounded-md px-3 text-sm bg-white flex items-center gap-2 focus:outline-none focus:ring-1 focus:ring-[#374151] disabled:opacity-50 disabled:cursor-not-allowed transition"
+        onClick={() => { if (!disabled) setOpen(o => !o); }}
+        className="w-full h-8.5 border border-[#e5e7eb] rounded-md px-3 text-sm bg-white flex items-center gap-2 focus:outline-none focus:ring-1 focus:ring-[#374151] disabled:opacity-50 disabled:cursor-not-allowed transition"
         style={previewFont && current?.fontFamily ? { fontFamily: current.fontFamily } : undefined}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -73,12 +104,13 @@ export default function CustomSelect({
         <ChevronDown className={`w-3.5 h-3.5 text-[#9ca3af] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Dropdown */}
-      {open && (
+      {/* Dropdown rendered in a portal — escapes any overflow:hidden ancestor */}
+      {open && typeof document !== 'undefined' && createPortal(
         <div
+          ref={dropdownRef}
           role="listbox"
-          className="absolute z-50 left-0 right-0 top-full mt-1 bg-white border border-[#e5e7eb] rounded-lg shadow-xl overflow-hidden"
-          style={{ maxHeight: '220px', overflowY: 'auto' }}
+          style={{ ...dropdownStyle, maxHeight: '220px', overflowY: 'auto' }}
+          className="bg-white border border-[#e5e7eb] rounded-lg shadow-xl overflow-hidden"
         >
           {options.map(opt => (
             <button
@@ -104,7 +136,8 @@ export default function CustomSelect({
               )}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

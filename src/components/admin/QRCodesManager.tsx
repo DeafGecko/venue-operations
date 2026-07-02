@@ -313,7 +313,7 @@ export default function QRCodesManager() {
                               ))}
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-[#f3f4f6]">
+                          <tbody className="divide-y divide-[#e5e7eb]">
                             {rsvpList.map(r => (
                               <tr key={r.id} className="hover:bg-[#fafafa]">
                                 <td className="px-3 py-2 text-xs font-medium text-[#111827]">{r.guest_name}</td>

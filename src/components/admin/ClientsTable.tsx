@@ -101,7 +101,7 @@ export default function ClientsTable() {
 
         {/* Table */}
         <div className="flex-1 overflow-auto">
-          <table className="w-full">
+          <table className="w-full border-separate border-spacing-0">
             <thead className="sticky top-0 z-10">
               <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
                 {['Account #', 'Name', 'Company', 'Email', 'Phone', 'Actions'].map(h => (
@@ -109,7 +109,7 @@ export default function ClientsTable() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f4f6]">
+            <tbody className="divide-y divide-[#e5e7eb]">
               {filtered.length === 0 ? (
                 <tr><td colSpan={6} className="py-10 text-center text-xs text-[#9ca3af]">No clients found.</td></tr>
               ) : filtered.map(c => (

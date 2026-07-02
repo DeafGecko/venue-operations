@@ -94,7 +94,7 @@ export default function VendorsTable() {
         {error && <div className="px-4 py-2 bg-red-50 text-red-700 text-xs border-b border-red-200">{error}</div>}
 
         <div className="flex-1 overflow-auto">
-          <table className="w-full">
+          <table className="w-full border-separate border-spacing-0">
             <thead className="sticky top-0 z-10">
               <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
                 {['Account #', 'Name', 'Contact', 'Service', 'Email', 'Phone', 'Actions'].map(h => (
@@ -102,7 +102,7 @@ export default function VendorsTable() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f4f6]">
+            <tbody className="divide-y divide-[#e5e7eb]">
               {filtered.length === 0 ? (
                 <tr><td colSpan={7} className="py-10 text-center text-xs text-[#9ca3af]">No vendors found.</td></tr>
               ) : filtered.map(v => (
@@ -111,7 +111,7 @@ export default function VendorsTable() {
                   <td className="px-3 py-2 text-sm font-medium text-[#111827]">{v.name}</td>
                   <td className="px-3 py-2 text-sm text-[#6b7280]">{v.contact || '—'}</td>
                   <td className="px-3 py-2">
-                    {v.serviceType ? <span className="px-2 py-0.5 rounded-full text-[0.6rem] font-medium bg-blue-50 text-blue-700 border border-blue-200">{v.serviceType}</span> : '—'}
+                    {v.serviceType ? <span className="px-2 py-0.5 rounded-full text-[0.6rem] font-medium bg-blue-500 text-white">{v.serviceType}</span> : '—'}
                   </td>
                   <td className="px-3 py-2 text-sm text-[#6b7280]">{v.email}</td>
                   <td className="px-3 py-2 text-sm text-[#6b7280]">{v.phone || '—'}</td>

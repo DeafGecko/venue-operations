@@ -38,16 +38,16 @@ const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => (
 );
 
 const statusStyle: Record<string, string> = {
-  active:   'bg-emerald-50 text-emerald-700 border-emerald-200',
-  inactive: 'bg-[#f3f4f6] text-[#6b7280] border-[#e5e7eb]',
-  'on-call': 'bg-amber-50 text-amber-700 border-amber-200',
+  active:   'bg-emerald-500 text-white',
+  inactive: 'bg-[#6b7280] text-white',
+  'on-call': 'bg-amber-500 text-white',
 };
 
 const roleStyle: Record<string, string> = {
-  manager:    'bg-purple-50 text-purple-700 border-purple-200',
-  employee:   'bg-blue-50 text-blue-700 border-blue-200',
-  contractor: 'bg-orange-50 text-orange-700 border-orange-200',
-  volunteer:  'bg-teal-50 text-teal-700 border-teal-200',
+  manager:    'bg-purple-500 text-white',
+  employee:   'bg-blue-500 text-white',
+  contractor: 'bg-orange-500 text-white',
+  volunteer:  'bg-teal-500 text-white',
 };
 
 export default function StaffTable() {
@@ -164,7 +164,7 @@ export default function StaffTable() {
         </div>
 
         {/* Status summary */}
-        <div className="px-4 py-1.5 border-b border-[#f3f4f6] flex items-center gap-4 text-xs shrink-0">
+        <div className="px-4 py-1.5 flex items-center gap-4 text-xs shrink-0" style={{ borderBottom: '1px solid var(--admin-border)' }}>
           <span className="text-emerald-600 font-medium">{counts.active} active</span>
           <span className="text-amber-600 font-medium">{counts['on-call']} on-call</span>
           <span className="text-[#9ca3af]">{counts.inactive} inactive</span>
@@ -174,9 +174,9 @@ export default function StaffTable() {
 
         {/* Table */}
         <div className="flex-1 overflow-auto">
-          <table className="w-full">
+          <table className="w-full border-separate border-spacing-0">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
+              <tr className="bg-[#f9fafb]" style={{ borderBottom: '1px solid var(--admin-border)' }}>
                 {['Account #', 'Name', 'Role', 'Department', 'Contact', 'Schedule', 'Shift', 'Status', 'Actions'].map(h => (
                   <th key={h} className={`text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]
                     ${h === 'Department' ? 'hidden lg:table-cell' : ''}
@@ -184,7 +184,7 @@ export default function StaffTable() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f4f6]">
+            <tbody className="divide-y divide-[#e5e7eb]">
               {filtered.length === 0 ? (
                 <tr><td colSpan={9} className="py-12 text-center text-xs text-[#9ca3af]">No staff found. Add your first staff member.</td></tr>
               ) : filtered.map(s => (
@@ -195,7 +195,7 @@ export default function StaffTable() {
                     {s.startDate && <p className="text-[0.6rem] text-[#9ca3af]">Since {new Date(s.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>}
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium border capitalize ${roleStyle[s.role || ''] ?? 'bg-[#f3f4f6] text-[#6b7280] border-[#e5e7eb]'}`}>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium capitalize ${roleStyle[s.role || ''] ?? 'bg-[#6b7280] text-white'}`}>
                       {s.role || '—'}
                     </span>
                   </td>
@@ -217,7 +217,7 @@ export default function StaffTable() {
                       : (s.shiftStart && s.shiftEnd) ? `${s.shiftStart} – ${s.shiftEnd}` : '—'}
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium border capitalize ${statusStyle[s.status || 'inactive']}`}>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium capitalize ${statusStyle[s.status || 'inactive']}`}>
                       {s.status || 'inactive'}
                     </span>
                   </td>

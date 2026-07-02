@@ -264,6 +264,9 @@ const activePath = Astro.url.pathname;
       html.dark .divide-\[\#f3f4f6\] > * + * {
         border-color: rgba(255,255,255,0.07) !important;
       }
+      html.dark .divide-\[\#e5e7eb\] > * + * {
+        border-color: rgba(255,255,255,0.1) !important;
+      }
 
       /* Text colors */
       html.dark .text-\[\#111827\] { color: #f3f4f6 !important; }
@@ -284,6 +287,10 @@ const activePath = Astro.url.pathname;
       html.dark input::placeholder,
       html.dark textarea::placeholder {
         color: #4b5563 !important;
+      }
+      html.dark input[type="number"]::-webkit-inner-spin-button,
+      html.dark input[type="number"]::-webkit-outer-spin-button {
+        filter: invert(0.7) brightness(1.5);
       }
 
       /* Icons — make lucide strokes lighter */
@@ -510,7 +517,7 @@ const activePath = Astro.url.pathname;
     <div class="flex h-screen overflow-hidden desktop-layout">
       <!-- ===== SIDEBAR ===== -->
       <aside
-        class="sidebar w-52 shrink-0 m-4 rounded-lg flex flex-col overflow-hidden"
+        class="sidebar w-56 shrink-0 m-4 rounded-lg flex flex-col overflow-hidden"
         style="display: flex !important;"
       >
         <header class="px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
@@ -519,11 +526,11 @@ const activePath = Astro.url.pathname;
               <img
                 src={c.logo}
                 alt={c.venueName}
-                class="h-8 w-8 object-contain shrink-0"
+                class="h-10 w-10 object-contain shrink-0"
               />
               <div class="min-w-0">
-                <p class="text-[0.7rem] font-semibold leading-tight truncate" style="color: var(--admin-sidebar-text);">{c.venueName}</p>
-                <p class="text-[0.55rem] leading-tight truncate sidebar-muted">{c.tagline}</p>
+                <p class="text-[0.9rem] font-semibold leading-tight truncate" style="color: var(--admin-sidebar-text);">{c.venueName}</p>
+                <p class="text-[0.70rem] leading-tight truncate sidebar-muted">{c.tagline}</p>
               </div>
             </div>
             <button

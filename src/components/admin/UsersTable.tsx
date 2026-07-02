@@ -13,12 +13,6 @@ interface User {
 
 const ROLES = ['admin', 'developer', 'manager', 'viewer'] as const;
 
-const roleBadge: Record<string, string> = {
-  admin:     'bg-purple-50 text-purple-700 border-purple-200',
-  developer: 'bg-blue-50 text-blue-700 border-blue-200',
-  manager:   'bg-amber-50 text-amber-700 border-amber-200',
-  viewer:    'bg-gray-100 text-gray-600 border-gray-200',
-};
 
 export default function UsersTable() {
   const [users, setUsers]               = useState<User[]>([]);
@@ -134,7 +128,7 @@ export default function UsersTable() {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full border-separate border-spacing-0">
             <thead>
               <tr className="border-b border-[#e5e7eb] bg-[#f9fafb]">
                 {['Name', 'Email', 'Role', 'Status', 'Actions'].map((h) => (
@@ -142,7 +136,7 @@ export default function UsersTable() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f4f6]">
+            <tbody className="divide-y divide-[#e5e7eb]">
               {users.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-10 text-center text-xs text-[#9ca3af]">No users found.</td>
@@ -159,7 +153,7 @@ export default function UsersTable() {
                     />
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${user.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${user.isActive ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
                       {user.isActive ? 'Active' : 'Blocked'}
                     </span>
                   </td>

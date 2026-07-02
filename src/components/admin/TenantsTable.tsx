@@ -27,9 +27,9 @@ const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => (
 );
 
 const statusStyle: Record<string, string> = {
-  active:  'bg-emerald-50 text-emerald-700 border-emerald-200',
-  expired: 'bg-red-50 text-red-700 border-red-200',
-  pending: 'bg-amber-50 text-amber-700 border-amber-200',
+  active:  'bg-emerald-500 text-white',
+  expired: 'bg-red-500 text-white',
+  pending: 'bg-amber-500 text-white',
 };
 
 const leaseStatus = (tenant: Tenant): 'active' | 'expired' | 'pending' => {
@@ -121,7 +121,7 @@ export default function TenantsTable() {
         {error && <div className="px-4 py-2 bg-red-50 text-red-700 text-xs border-b border-red-200">{error}</div>}
 
         <div className="flex-1 overflow-auto">
-          <table className="w-full">
+          <table className="w-full border-separate border-spacing-0">
             <thead className="sticky top-0 z-10">
               <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
                 {['Account #', 'Name', 'Business Type', 'Unit', 'Lease Period', 'Rent / mo', 'Status', 'Actions'].map(h => (
@@ -129,7 +129,7 @@ export default function TenantsTable() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f4f6]">
+            <tbody className="divide-y divide-[#e5e7eb]">
               {filtered.length === 0 ? (
                 <tr><td colSpan={8} className="py-10 text-center text-xs text-[#9ca3af]">No tenants found.</td></tr>
               ) : filtered.map(t => {
@@ -150,7 +150,7 @@ export default function TenantsTable() {
                     </td>
                     <td className="px-3 py-2 text-sm text-[#111827]">{t.rentAmount ? `$${t.rentAmount.toLocaleString()}` : '—'}</td>
                     <td className="px-3 py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${statusStyle[status]}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle[status]}`}>
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                       </span>
                     </td>

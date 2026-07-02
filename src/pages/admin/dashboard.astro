@@ -101,23 +101,23 @@ const stats = [
 
     <!-- Recent Bookings -->
     <div class="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
-      <div class="px-4 py-3 border-b border-[#e5e7eb] flex items-center justify-between">
+      <div class="px-4 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border)">
         <p class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Recent Bookings</p>
         <a href="/admin" class="text-[0.65rem] text-[#6b7280] hover:text-[#111827] transition">View all →</a>
       </div>
-      <ul class="divide-y divide-[#f3f4f6]">
+      <ul>
         {recentBookings.length === 0 ? (
           <li class="py-8 text-center text-xs text-[#9ca3af]">No bookings yet.</li>
         ) : recentBookings.map((b: any) => (
-          <li class="flex items-center justify-between px-4 py-2.5 hover:bg-[#fafafa] transition">
+          <li class="flex items-center justify-between px-4 py-2.5 hover:bg-[#fafafa] transition" style="border-bottom: 1px solid var(--admin-border)">
             <div class="min-w-0">
               <p class="text-sm font-medium text-[#111827] truncate">{b.clientName}</p>
               <p class="text-[0.65rem] text-[#9ca3af]">{b.accountNumber} · {b.eventDate ? new Date(b.eventDate).toLocaleDateString() : '—'}</p>
             </div>
-            <span class={`ml-3 shrink-0 px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${
-              b.paymentStatus === 'paid'    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-              b.paymentStatus === 'partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                             'bg-red-50 text-red-700 border-red-200'
+            <span class={`ml-3 shrink-0 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${
+              b.paymentStatus === 'paid'    ? 'bg-emerald-500 text-white' :
+              b.paymentStatus === 'partial' ? 'bg-amber-500 text-white' :
+                                             'bg-red-500 text-white'
             }`}>
               {b.paymentStatus || 'unpaid'}
             </span>
@@ -128,24 +128,24 @@ const stats = [
 
     <!-- Today's Events -->
     <div class="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
-      <div class="px-4 py-3 border-b border-[#e5e7eb] flex items-center justify-between">
+      <div class="px-4 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border)">
         <p class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Today's Events</p>
         <p class="text-[0.65rem] text-[#9ca3af]">{today.toLocaleDateString('default', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
       </div>
-      <ul class="divide-y divide-[#f3f4f6]">
+      <ul>
         {todayEvents.length === 0 ? (
           <li class="py-8 text-center text-xs text-[#9ca3af]">No events scheduled for today.</li>
         ) : todayEvents.map((b: any) => (
-          <li class="flex items-center gap-3 px-4 py-2.5 hover:bg-[#fafafa] transition">
+          <li class="flex items-center gap-3 px-4 py-2.5 hover:bg-[#fafafa] transition" style="border-bottom: 1px solid var(--admin-border)">
             <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
             <div class="min-w-0">
               <p class="text-sm font-medium text-[#111827] truncate">{b.clientName}</p>
               <p class="text-[0.65rem] text-[#9ca3af] truncate">{b.eventType || 'Event'} · {b.accountNumber}</p>
             </div>
-            <span class={`ml-auto shrink-0 px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${
-              b.paymentStatus === 'paid'    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-              b.paymentStatus === 'partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                             'bg-red-50 text-red-700 border-red-200'
+            <span class={`ml-auto shrink-0 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${
+              b.paymentStatus === 'paid'    ? 'bg-emerald-500 text-white' :
+              b.paymentStatus === 'partial' ? 'bg-amber-500 text-white' :
+                                             'bg-red-500 text-white'
             }`}>
               {b.paymentStatus || 'unpaid'}
             </span>

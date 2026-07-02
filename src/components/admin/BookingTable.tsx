@@ -25,16 +25,10 @@ interface Booking {
 interface Props { initialBookings: Booking[]; }
 
 const statusStyle = (s: string) =>
-  s === 'paid'    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-  s === 'partial' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-  s === 'owe'     ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                    'bg-red-50 text-red-700 border-red-200';
-
-const dotColor = (s: string) =>
-  s === 'paid'    ? 'bg-emerald-500' :
-  s === 'partial' ? 'bg-amber-500' :
-  s === 'owe'     ? 'bg-blue-500' :
-                    'bg-red-500';
+  s === 'paid'    ? 'bg-emerald-500 text-white' :
+  s === 'partial' ? 'bg-amber-500 text-white' :
+  s === 'owe'     ? 'bg-blue-500 text-white' :
+                    'bg-red-500 text-white';
 
 const statusLabel = (s: string) =>
   s === 'paid' ? 'Paid' : s === 'partial' ? 'Partial' : s === 'owe' ? 'Owes Refund' : 'Unpaid';
@@ -193,7 +187,7 @@ export default function BookingTable({ initialBookings }: Props) {
 
       {/* Table */}
       <div className="flex-1 overflow-auto">
-        <table className="w-full">
+        <table className="w-full border-separate border-spacing-0">
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
               <th className="px-3 py-2 w-8">
@@ -209,7 +203,7 @@ export default function BookingTable({ initialBookings }: Props) {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#f3f4f6]">
+          <tbody className="divide-y divide-[#e5e7eb]">
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={9} className="py-12 text-center text-[#9ca3af]">
@@ -235,8 +229,7 @@ export default function BookingTable({ initialBookings }: Props) {
                 <td className="px-3 py-2 text-xs text-[#6b7280] hidden sm:table-cell">{b.guestCount}</td>
                 <td className="px-3 py-2 text-xs font-medium text-[#111827] hidden md:table-cell">${(b.totalPrice || 0).toFixed(2)}</td>
                 <td className="px-3 py-2">
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${statusStyle(deriveStatus(b))}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${dotColor(deriveStatus(b))}`} />
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle(deriveStatus(b))}`}>
                     {statusLabel(deriveStatus(b))}
                   </span>
                 </td>

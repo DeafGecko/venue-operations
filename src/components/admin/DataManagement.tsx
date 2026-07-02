@@ -215,7 +215,7 @@ export default function DataManagement() {
         {log.length === 0 ? (
           <p className="text-xs text-[#9ca3af]">No activity yet. Import or export data to see a log here.</p>
         ) : (
-          <ul className="divide-y divide-[#f3f4f6]">
+          <ul className="divide-y divide-[#e5e7eb]">
             {log.map((entry) => (
               <li key={entry.id} className="flex items-center justify-between py-2 text-sm">
                 <div className="flex items-center gap-2">

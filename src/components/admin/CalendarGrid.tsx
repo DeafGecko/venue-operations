@@ -129,11 +129,12 @@ export default function CalendarGrid({ bookings }: Props) {
             </div>
 
 {/* ── Day headers ── */}
-      <div className="grid grid-cols-7 gap-px bg-[#e5e7eb]">
+      <div className="grid grid-cols-7 gap-px" style={{ background: 'var(--admin-border)' }}>
             {dayNames.map((day) => (
             <div
                   key={day}
-                  className="py-2 text-center text-xs font-semibold text-[#6b7280] uppercase tracking-wider bg-[#f3f4f6]"
+                  className="py-2 text-center text-xs font-semibold text-[#6b7280] uppercase tracking-wider"
+                  style={{ background: 'var(--admin-surface, var(--admin-bg))' }}
             >
                   {day}
             </div>
@@ -141,7 +142,7 @@ export default function CalendarGrid({ bookings }: Props) {
             </div>
 
 {/* ── Calendar grid ── */}
-            <div className="grid grid-cols-7 gap-px bg-[#e5e7eb]">
+            <div className="grid grid-cols-7 gap-px" style={{ background: 'var(--admin-border)' }}>
                   {/* Empty days before the 1st */}
                   {Array.from({ length: firstDayIndex }).map((_, i) => (
                   <div
@@ -194,6 +195,10 @@ export default function CalendarGrid({ bookings }: Props) {
                   </div>
                   );
                   })}
+      {/* Trailing empty cells to complete the last row */}
+      {Array.from({ length: (7 - (firstDayIndex + daysInMonth) % 7) % 7 }).map((_, i) => (
+        <div key={`trail-${i}`} className="bg-white min-h-25 p-1" />
+      ))}
       </div>
 
 {/* ── Legend ── */}
@@ -290,12 +295,12 @@ export default function CalendarGrid({ bookings }: Props) {
             </div>
             <div className="flex justify-between py-1.5 border-b border-[#f3f4f6]">
                   <span className="text-[#6b7280]">Status</span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         selectedBooking.paymentStatus === 'paid'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              ? 'bg-emerald-500 text-white'
                               : selectedBooking.paymentStatus === 'partial'
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : 'bg-red-50 text-red-700 border-red-200'
+                              ? 'bg-amber-500 text-white'
+                              : 'bg-red-500 text-white'
                         }`}>
                               {getStatusLabel(selectedBooking.paymentStatus)}
                   </span>

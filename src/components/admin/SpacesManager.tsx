@@ -174,7 +174,7 @@ export default function SpacesManager() {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#f3f4f6]">
+          <tbody className="divide-y divide-[#e5e7eb]">
             {spaces.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-12 text-center text-[#9ca3af]">
@@ -189,10 +189,10 @@ export default function SpacesManager() {
                 <td className="px-3 py-2 text-xs text-[#6b7280]">{getTypeLabel(space.type)}</td>
                 <td className="px-3 py-2 text-xs text-[#6b7280]">{space.capacity || '—'}</td>
                 <td className="px-3 py-2">
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-medium border ${
-                    space.isArchived ? 'bg-[#f3f4f6] text-[#6b7280] border-[#e5e7eb]'
-                    : space.isAvailable ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : 'bg-red-50 text-red-700 border-red-200'}`}>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${
+                    space.isArchived ? 'bg-[#6b7280] text-white'
+                    : space.isAvailable ? 'bg-emerald-500 text-white'
+                    : 'bg-red-500 text-white'}`}>
                     {space.isArchived ? <><Package className="w-3 h-3" /> Archived</>
                       : space.isAvailable ? <><CheckCircle className="w-3 h-3" /> Available</>
                       : <><XCircle className="w-3 h-3" /> Unavailable</>}

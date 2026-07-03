@@ -110,7 +110,7 @@ export default function FloorManager() {
   const formOpen = isAdding || !!editingId;
 
   return (
-    <div className="rounded-xl border border-[#e5e7eb] dark:border-white/6 overflow-hidden">
+    <div className="rounded-xl border border-[#e5e7eb] dark:border-white/6 overflow-hidden bg-white">
 
       {/* Toolbar */}
       <div className="px-4 py-3 border-b border-[#e5e7eb] dark:border-white/6 bg-[#f9fafb] flex flex-wrap items-center justify-between gap-3">
@@ -182,10 +182,10 @@ export default function FloorManager() {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-16rem)]">
+      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-16rem)] bg-white">
         <table className="w-full text-sm">
           <thead className="sticky top-0 z-10">
-            <tr className="bg-[#f9fafb] border-b border-[#e5e7eb] dark:border-white/6">
+            <tr className="bg-[#f9fafb] border-b border-[#e5e7eb] dark:border-white/6 sticky top-0 z-10">
               <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Code</th>
               <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Name</th>
               <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Type</th>
@@ -204,7 +204,7 @@ export default function FloorManager() {
                 </td>
               </tr>
             ) : floors.map(floor => (
-              <tr key={floor._id} className={`hover:bg-[#fafafa] transition ${editingId === floor._id ? 'bg-blue-50/30' : ''}`}>
+              <tr key={floor._id} className={`transition ${editingId === floor._id ? 'bg-blue-50/30 dark:bg-blue-900/20' : 'bg-white hover:bg-[#fafafa] dark:hover:bg-white/5'}`}>
                 <td className="px-4 py-3 font-mono text-xs text-[#111827] font-medium">{floor.code}</td>
                 <td className="px-4 py-3 text-sm text-[#374151]">{floor.name || '—'}</td>
                 <td className="px-4 py-3 text-xs text-[#6b7280]">{getTypeLabel(floor.type)}</td>

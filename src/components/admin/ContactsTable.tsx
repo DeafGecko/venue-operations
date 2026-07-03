@@ -1,6 +1,6 @@
 // src/components/admin/ContactsTable.tsx
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Phone, Mail, MapPin, Search, ChevronUp, ChevronDown, X, Download, Tag, ExternalLink, Camera, ZoomIn, ZoomOut } from 'lucide-react';
+import { Phone, Mail, MapPin, Search, ChevronUp, ChevronDown, X, Download, Tag, ExternalLink, Camera, ZoomIn, ZoomOut, Plus, FileText, Upload } from 'lucide-react';
 
 // ── Avatar Crop Modal ─────────────────────────────────────────────────────────
 function AvatarCropModal({ src, onConfirm, onCancel }: {
@@ -307,6 +307,143 @@ function StatusCell({ contact, onSave }: {
   );
 }
 
+// ── Contracts mini-list (inside drawer) ───────────────────────────────────────
+type DrawerContract = {
+  _id: string; title: string; contractType: string;
+  status: string; endDate?: string; pdfUrl?: string; signedAt?: string;
+};
+
+const CONTRACT_STATUS_PILL: Record<string, string> = {
+  draft:     'bg-gray-400 text-white',
+  sent:      'bg-blue-500 text-white',
+  signed:    'bg-emerald-500 text-white',
+  expired:   'bg-amber-500 text-white',
+  cancelled: 'bg-red-400 text-white',
+};
+
+function ContactContracts({ contactId, contactName, contactEmail }: {
+  contactId: string; contactName: string; contactEmail?: string;
+}) {
+  const [contracts, setContracts] = useState<DrawerContract[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [adding, setAdding]       = useState(false);
+  const [newTitle, setNewTitle]   = useState('');
+  const [newType, setNewType]     = useState<string>('rental');
+  const [saving, setSaving]       = useState(false);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/contracts?contactId=${encodeURIComponent(contactId)}`);
+      const data = await res.json();
+      setContracts(Array.isArray(data) ? data : []);
+    } finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, [contactId]);
+
+  const handleCreate = async () => {
+    if (!newTitle.trim()) return;
+    setSaving(true);
+    try {
+      await fetch('/api/admin/contracts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contactId, contactName, contactEmail, title: newTitle, contractType: newType, status: 'draft' }),
+      });
+      setNewTitle(''); setAdding(false);
+      await load();
+    } finally { setSaving(false); }
+  };
+
+  const handlePdfUpload = async (id: string, file: File) => {
+    setUploadingId(id);
+    try {
+      const res = await fetch(`/api/admin/contracts/${id}?filename=${encodeURIComponent(file.name)}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/pdf' }, body: file,
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      await load();
+    } catch (e: any) { alert(e.message); }
+    finally { setUploadingId(null); }
+  };
+
+  return (
+    <div className="px-5 pt-5">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Contracts</p>
+        <button type="button" onClick={() => setAdding(a => !a)}
+          className="text-[0.6rem] text-[#9ca3af] hover:text-[#374151] transition flex items-center gap-0.5">
+          <Plus className="w-3 h-3" /> New
+        </button>
+      </div>
+
+      {adding && (
+        <div className="flex flex-col gap-1.5 mb-3 p-3 rounded-lg bg-[#f9fafb] border border-[#e5e7eb]">
+          <input value={newTitle} onChange={e => setNewTitle(e.target.value)}
+            placeholder="Contract title…"
+            className="h-7 border border-[#e5e7eb] rounded px-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+          <select value={newType} onChange={e => setNewType(e.target.value)} title="Contract type"
+            className="h-7 border border-[#e5e7eb] rounded px-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#374151]">
+            <option value="rental">Rental</option>
+            <option value="vendor">Vendor</option>
+            <option value="lease">Lease</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div className="flex gap-1.5">
+            <button type="button" onClick={() => setAdding(false)}
+              className="flex-1 py-1 text-[0.65rem] border border-[#e5e7eb] rounded hover:bg-white transition">Cancel</button>
+            <button type="button" onClick={handleCreate} disabled={saving || !newTitle.trim()}
+              className="flex-1 py-1 text-[0.65rem] rounded btn-primary disabled:opacity-50 transition">
+              {saving ? 'Saving…' : 'Create'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <p className="text-[0.65rem] text-[#9ca3af]">Loading…</p>
+      ) : contracts.length === 0 ? (
+        <p className="text-[0.65rem] text-[#9ca3af] italic">No contracts yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {contracts.map(c => (
+            <div key={c._id} className="flex items-start gap-2 p-2.5 rounded-lg border border-[#e5e7eb] bg-[#f9fafb]">
+              <FileText className="w-3.5 h-3.5 text-[#9ca3af] shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-[#374151] truncate">{c.title}</p>
+                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[0.55rem] font-semibold ${CONTRACT_STATUS_PILL[c.status] ?? 'bg-gray-200 text-gray-600'}`}>
+                    {c.status}
+                  </span>
+                  <span className="text-[0.55rem] text-[#9ca3af] capitalize">{c.contractType}</span>
+                  {c.endDate && <span className="text-[0.55rem] text-[#9ca3af]">Exp: {new Date(c.endDate).toLocaleDateString()}</span>}
+                </div>
+                <div className="mt-1">
+                  {c.pdfUrl ? (
+                    <a href={c.pdfUrl} target="_blank" rel="noreferrer"
+                      className="text-[0.6rem] text-blue-600 hover:underline flex items-center gap-0.5">
+                      <ExternalLink className="w-2.5 h-2.5" /> View PDF
+                    </a>
+                  ) : (
+                    <label className={`text-[0.6rem] cursor-pointer flex items-center gap-0.5 ${uploadingId === c._id ? 'text-[#9ca3af]' : 'text-[#6b7280] hover:text-[#374151]'}`}>
+                      <Upload className="w-2.5 h-2.5" />
+                      {uploadingId === c._id ? 'Uploading…' : 'Upload signed PDF'}
+                      <input type="file" accept=".pdf" className="hidden" disabled={uploadingId === c._id}
+                        onChange={e => { const f = e.target.files?.[0]; if (f) handlePdfUpload(c._id, f); }} />
+                    </label>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Right side - detail drawer ─────────────────────────────────────────────────────────────
 function ContactDrawer({ contact, onClose, onSave }: {
   contact: Contact;
@@ -588,6 +725,9 @@ function ContactDrawer({ contact, onClose, onSave }: {
           />
         </div>
 
+{/* Contracts */}
+        <ContactContracts contactId={contact.id} contactName={contact.name} contactEmail={contact.email} />
+
 {/* Footer */}
         <div className="px-5 py-4 border-t border-[#e5e7eb] mt-4 space-y-2">
           <button type="button" disabled={saving} onClick={handleSave}
@@ -774,11 +914,11 @@ export default function ContactsTable() {
       </div>
 
 {/* ── Scrollable table ── */}
-      <div className="overflow-hidden rounded-xl border border-[#e5e7eb] dark:border-white/10">
-        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-18rem)]">
+      <div className="overflow-hidden rounded-xl border border-[#e5e7eb] dark:border-white/10 bg-white">
+        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-18rem)] bg-white">
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-[#fafafa] border-b border-[#e5e7eb] dark:border-white/10">
+              <tr className="bg-[#f9fafb] border-b border-[#e5e7eb] dark:border-white/10">
                 <th className="text-left px-4 py-2.5">
                   <button type="button" onClick={() => toggleSort('name')} className="flex items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af]">
                     Name <SortIcon k="name" />
@@ -806,7 +946,7 @@ export default function ContactsTable() {
                   className={`cursor-pointer transition ${
                     dnc
                       ? 'bg-red-50/60 hover:bg-red-100/60 dark:bg-red-900/20 dark:hover:bg-red-900/30 opacity-60'
-                      : 'hover:bg-[#fafafa]'
+                      : 'bg-white hover:bg-[#fafafa] dark:hover:bg-white/5'
                   }`}
                 >
                   <td className="px-4 py-3">

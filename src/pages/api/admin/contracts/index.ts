@@ -4,17 +4,15 @@ import { sanityClient } from '../../../../lib/sanity';
 export const GET: APIRoute = async ({ url }) => {
   try {
     const contactId = url.searchParams.get('contactId');
+    const fields = `
+      _id, _createdAt, contactId, contactName, contactEmail,
+      contractType, title, status, notes, startDate, endDate, sentAt, signedAt,
+      "pdfUrl": pdfFile.asset->url, "pdfName": pdfFile.asset->originalFilename,
+      "attachments": attachments[]{ label, fileType, uploadedAt, "url": file.asset->url, "filename": file.asset->originalFilename }
+    `;
     const query = contactId
-      ? `*[_type == "contract" && contactId == $contactId] | order(_createdAt desc) {
-           _id, _createdAt, contactId, contactName, contactEmail,
-           contractType, title, status, notes, startDate, endDate, sentAt, signedAt,
-           "pdfUrl": pdfFile.asset->url, "pdfName": pdfFile.asset->originalFilename
-         }`
-      : `*[_type == "contract"] | order(_createdAt desc) {
-           _id, _createdAt, contactId, contactName, contactEmail,
-           contractType, title, status, notes, startDate, endDate, sentAt, signedAt,
-           "pdfUrl": pdfFile.asset->url, "pdfName": pdfFile.asset->originalFilename
-         }`;
+      ? `*[_type == "contract" && contactId == $contactId] | order(_createdAt desc) { ${fields} }`
+      : `*[_type == "contract"] | order(_createdAt desc) { ${fields} }`;
     const params = contactId ? { contactId } : {};
     const contracts = await sanityClient.fetch(query, params);
     return new Response(JSON.stringify(contracts), { headers: { 'Content-Type': 'application/json' } });

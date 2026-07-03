@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { FileText, Plus, Upload, Pencil, Trash2, X, Check, ExternalLink, AlertTriangle, Clock, CheckCircle, XCircle, FileSignature, Search } from 'lucide-react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { FileText, Plus, Upload, Pencil, Trash2, X, Check, ExternalLink, AlertTriangle, Clock, CheckCircle, XCircle, FileSignature, Search, Paperclip, Image, ChevronDown, ChevronUp } from 'lucide-react';
 
 type ContractType   = 'rental' | 'vendor' | 'lease' | 'custom';
 type ContractStatus = 'draft' | 'sent' | 'signed' | 'expired' | 'cancelled';
@@ -20,6 +20,7 @@ interface Contract {
   signedAt?:     string;
   pdfUrl?:       string;
   pdfName?:      string;
+  attachments?:  { label: string; fileType: string; url: string; filename: string; uploadedAt: string }[];
 }
 
 const TYPE_CONFIG: Record<ContractType, { label: string; color: string }> = {
@@ -46,6 +47,95 @@ function StatusPill({ status }: { status: ContractStatus }) {
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-semibold ${cfg.color}`}>
       {cfg.icon} {cfg.label}
     </span>
+  );
+}
+
+// ── Attachments panel ────────────────────────────────────────────────────────
+function AttachmentsPanel({ contractId, attachments, onRefresh }: {
+  contractId:  string;
+  attachments: Contract['attachments'];
+  onRefresh:   () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [label, setLabel]         = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const res = await fetch(
+        `/api/admin/contracts/${contractId}?mode=attachment&filename=${encodeURIComponent(file.name)}&label=${encodeURIComponent(label || file.name)}`,
+        { method: 'PATCH', headers: { 'Content-Type': file.type || 'application/octet-stream' }, body: file }
+      );
+      if (!res.ok) throw new Error('Upload failed');
+      setLabel('');
+      onRefresh();
+    } catch (e: any) { alert(e.message); }
+    finally { setUploading(false); }
+  };
+
+  const handleRemove = async (index: number) => {
+    if (!confirm('Remove this attachment?')) return;
+    await fetch(`/api/admin/contracts/${contractId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ removeAttachmentIndex: index }),
+    });
+    onRefresh();
+  };
+
+  const list = attachments ?? [];
+
+  return (
+    <div className="px-4 pb-4 pt-1">
+      <div className="rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-3 space-y-2">
+        <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af] flex items-center gap-1">
+          <Paperclip className="w-3 h-3" /> Attachments
+        </p>
+
+        {/* File list */}
+        {list.length === 0 ? (
+          <p className="text-[0.65rem] text-[#9ca3af] italic">No attachments yet.</p>
+        ) : (
+          <div className="space-y-1.5">
+            {list.map((a, i) => (
+              <div key={i} className="flex items-center gap-2 bg-white rounded-md border border-[#e5e7eb] px-2.5 py-1.5">
+                {a.fileType === 'image'
+                  ? <Image className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  : <FileText className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                }
+                <span className="text-xs text-[#374151] flex-1 truncate">{a.label || a.filename}</span>
+                <a href={a.url} target="_blank" rel="noreferrer"
+                  className="text-[0.6rem] text-blue-600 hover:underline shrink-0 flex items-center gap-0.5">
+                  <ExternalLink className="w-2.5 h-2.5" /> Open
+                </a>
+                <button type="button" title="Remove attachment" onClick={() => handleRemove(i)}
+                  className="text-[#d1d5db] hover:text-red-400 transition shrink-0">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Upload row */}
+        <div className="flex items-center gap-2 pt-1">
+          <input value={label} onChange={e => setLabel(e.target.value)}
+            placeholder="Label (optional)"
+            className="flex-1 h-7 border border-[#e5e7eb] rounded px-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white" />
+          <label className={`h-7 flex items-center gap-1 px-3 rounded-md text-[0.65rem] font-medium cursor-pointer transition ${
+            uploading ? 'bg-[#e5e7eb] text-[#9ca3af]' : 'btn-primary'
+          }`}>
+            <Upload className="w-3 h-3" />
+            {uploading ? 'Uploading…' : 'Add File'}
+            <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" className="hidden"
+              disabled={uploading}
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = ''; }} />
+          </label>
+        </div>
+        <p className="text-[0.55rem] text-[#9ca3af]">Accepts PDF, JPG, PNG, GIF, WEBP</p>
+      </div>
+    </div>
   );
 }
 
@@ -116,14 +206,14 @@ function ContractFormModal({ initial, onSave, onClose }: {
 
           <div>
             <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Type</label>
-            <select value={form.contractType} onChange={e => set('contractType', e.target.value as ContractType)}
+            <select value={form.contractType} onChange={e => set('contractType', e.target.value as ContractType)} title="Contract type"
               className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]">
               {ALL_TYPES.map(t => <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Status</label>
-            <select value={form.status} onChange={e => set('status', e.target.value as ContractStatus)}
+            <select value={form.status} onChange={e => set('status', e.target.value as ContractStatus)} title="Contract status"
               className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]">
               {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>)}
             </select>
@@ -131,18 +221,18 @@ function ContractFormModal({ initial, onSave, onClose }: {
 
           <div>
             <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Start Date</label>
-            <input type="date" value={form.startDate ?? ''} onChange={e => set('startDate', e.target.value)}
+            <input type="date" title="Start date" value={form.startDate ?? ''} onChange={e => set('startDate', e.target.value)}
               className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
           </div>
           <div>
             <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">End / Expiry Date</label>
-            <input type="date" value={form.endDate ?? ''} onChange={e => set('endDate', e.target.value)}
+            <input type="date" title="End / expiry date" value={form.endDate ?? ''} onChange={e => set('endDate', e.target.value)}
               className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
           </div>
 
           <div className="col-span-2">
             <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Notes</label>
-            <textarea value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} rows={2}
+            <textarea value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} rows={2} title="Notes"
               className="w-full border border-[#e5e7eb] rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#374151]" />
           </div>
         </div>
@@ -170,6 +260,7 @@ export default function ContractsTable() {
   const [showModal, setShowModal]       = useState(false);
   const [editing, setEditing]           = useState<Contract | null>(null);
   const [uploadingId, setUploadingId]   = useState<string | null>(null);
+  const [expandedId, setExpandedId]     = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -271,7 +362,7 @@ export default function ContractsTable() {
             placeholder="Search title or contact…"
             className="w-full h-9 pl-8 pr-3 border border-[#e5e7eb] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white" />
         </div>
-        <select value={filterType} onChange={e => setFilterType(e.target.value as any)}
+        <select value={filterType} onChange={e => setFilterType(e.target.value as any)} title="Filter by type"
           className="h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white text-[#374151]">
           <option value="all">All Types</option>
           {ALL_TYPES.map(t => <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>)}
@@ -307,6 +398,7 @@ export default function ContractsTable() {
                 const expiring = isExpiringSoon(c.endDate) && c.status === 'signed';
                 const expired  = isExpired(c.endDate, c.status);
                 return (
+                  <>
                   <tr key={c._id} className={`bg-white hover:bg-[#fafafa] transition ${expiring ? 'border-l-2 border-amber-400' : ''} ${expired ? 'opacity-60' : ''}`}>
                     <td className="px-4 py-3">
                       <p className="text-sm font-medium text-[#111827]">{c.title}</p>
@@ -349,6 +441,16 @@ export default function ContractsTable() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
+                        <button type="button" title="Attachments"
+                          onClick={() => setExpandedId(expandedId === c._id ? null : c._id)}
+                          className={`p-1.5 rounded-md transition relative ${expandedId === c._id ? 'text-[#374151] bg-[#f3f4f6]' : 'text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6]'}`}>
+                          <Paperclip className="w-3.5 h-3.5" />
+                          {(c.attachments?.length ?? 0) > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-(--admin-primary) text-white text-[0.45rem] font-bold flex items-center justify-center">
+                              {c.attachments!.length}
+                            </span>
+                          )}
+                        </button>
                         <button type="button" title="Edit" onClick={() => { setEditing(c); setShowModal(true); }}
                           className="p-1.5 rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
                           <Pencil className="w-3.5 h-3.5" />
@@ -360,6 +462,18 @@ export default function ContractsTable() {
                       </div>
                     </td>
                   </tr>
+                  {expandedId === c._id && (
+                    <tr key={`${c._id}-attachments`} className="bg-[#fafafa]">
+                      <td colSpan={7} className="p-0">
+                        <AttachmentsPanel
+                          contractId={c._id}
+                          attachments={c.attachments}
+                          onRefresh={load}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  </>
                 );
               })}
             </tbody>

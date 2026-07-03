@@ -28,6 +28,20 @@ export const contract = defineType({
       name: 'pdfFile', type: 'file', title: 'Signed PDF',
       options: { accept: '.pdf' },
     }),
+    defineField({
+      name: 'attachments', type: 'array', title: 'Attachments',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({ name: 'label', type: 'string', title: 'Label' }),
+            defineField({ name: 'file',  type: 'file',   title: 'File', options: { accept: '.pdf,.jpg,.jpeg,.png,.gif,.webp' } }),
+            defineField({ name: 'fileType', type: 'string', title: 'File Type' }),
+            defineField({ name: 'uploadedAt', type: 'datetime', title: 'Uploaded At' }),
+          ],
+        },
+      ],
+    }),
   ],
   preview: {
     select: { title: 'title', subtitle: 'status' },

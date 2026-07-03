@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import ContactsTable from '../../components/admin/ContactsTable';
+---
+
+<AdminLayout title="Contacts" subtitle="Unified directory across clients, vendors, tenants, staff, and bookings.">
+  <ContactsTable client:load />
+</AdminLayout>

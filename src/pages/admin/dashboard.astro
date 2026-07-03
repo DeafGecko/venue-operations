@@ -114,7 +114,7 @@ const stats = [
               <p class="text-sm font-medium text-[#111827] truncate">{b.clientName}</p>
               <p class="text-[0.65rem] text-[#9ca3af]">{b.accountNumber} · {b.eventDate ? new Date(b.eventDate).toLocaleDateString() : '—'}</p>
             </div>
-            <span class={`ml-3 shrink-0 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${
+            <span class={`ml-3 shrink-0 inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${
               b.paymentStatus === 'paid'    ? 'bg-emerald-500 text-white' :
               b.paymentStatus === 'partial' ? 'bg-amber-500 text-white' :
                                              'bg-red-500 text-white'
@@ -142,7 +142,7 @@ const stats = [
               <p class="text-sm font-medium text-[#111827] truncate">{b.clientName}</p>
               <p class="text-[0.65rem] text-[#9ca3af] truncate">{b.eventType || 'Event'} · {b.accountNumber}</p>
             </div>
-            <span class={`ml-auto shrink-0 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${
+            <span class={`ml-auto shrink-0 inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${
               b.paymentStatus === 'paid'    ? 'bg-emerald-500 text-white' :
               b.paymentStatus === 'partial' ? 'bg-amber-500 text-white' :
                                              'bg-red-500 text-white'

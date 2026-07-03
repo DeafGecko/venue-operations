@@ -189,7 +189,7 @@ export default function BillsTable({ initialBookings }: Props) {
                     ${balance.toFixed(2)}
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle(effectiveStatus)}`}>
+                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle(effectiveStatus)}`}>
                       {statusLabel(effectiveStatus)}
                     </span>
                   </td>

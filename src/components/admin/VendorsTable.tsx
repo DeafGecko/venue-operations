@@ -111,7 +111,7 @@ export default function VendorsTable() {
                   <td className="px-3 py-2 text-sm font-medium text-[#111827]">{v.name}</td>
                   <td className="px-3 py-2 text-sm text-[#6b7280]">{v.contact || '—'}</td>
                   <td className="px-3 py-2">
-                    {v.serviceType ? <span className="px-2 py-0.5 rounded-full text-[0.6rem] font-medium bg-blue-500 text-white">{v.serviceType}</span> : '—'}
+                    {v.serviceType ? <span className="inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium bg-blue-500 text-white">{v.serviceType}</span> : '—'}
                   </td>
                   <td className="px-3 py-2 text-sm text-[#6b7280]">{v.email}</td>
                   <td className="px-3 py-2 text-sm text-[#6b7280]">{v.phone || '—'}</td>

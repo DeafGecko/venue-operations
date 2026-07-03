@@ -8,6 +8,7 @@ const WRITE_API_PATHS = [
   '/api/admin/import',
   '/api/admin/bookings',
   '/api/admin/settings',
+  '/api/admin/contacts',
 ];
 
 export const onRequest = defineMiddleware(async ({ request, cookies, redirect }, next) => {

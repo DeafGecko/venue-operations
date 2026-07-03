@@ -30,6 +30,7 @@ import {
   MessageSquare,
   PackageCheck,
   Database,
+  ContactRound,
 } from "lucide-react";
 
 export interface Props {
@@ -77,7 +78,7 @@ const c = {
   avatar: settings?.adminAvatar || null,
   font: settings?.fontFamily || defaults.font,
   logo: settings?.logo?.asset?.url || defaults.logo,
-  logoShape: (settings?.logoShape || 'square') as 'circle' | 'square',
+  logoShape: (settings?.logoShape || 'square') as 'circle' | 'square' | 'rectangle',
   venueName: settings?.venueName || defaults.venueName,
   tagline: settings?.tagline || defaults.tagline,
 };
@@ -99,14 +100,15 @@ const navGroups = [
     label: "Venue",
     items: [
       { href: "/admin/floor-plans", icon: Map, label: "Floor Plans" },
-      { href: "/admin/equipment", icon: Box, label: "Equipment" },
-      { href: "/admin/maintenance", icon: Wrench, label: "Maintenance" },
-      { href: "/admin/inventory", icon: PackageCheck, label: "Inventory" },
+      { href: null, icon: Box, label: "Equipment" },
+      { href: null, icon: Wrench, label: "Maintenance" },
+      { href: null, icon: PackageCheck, label: "Inventory" },
     ],
   },
   {
     label: "People",
     items: [
+      { href: "/admin/contacts", icon: ContactRound, label: "Contacts" },
       { href: "/admin/clients", icon: Users, label: "Clients" },
       { href: "/admin/vendors", icon: Briefcase, label: "Vendors" },
       { href: "/admin/tenants", icon: Building2, label: "Tenants" },
@@ -116,18 +118,17 @@ const navGroups = [
   {
     label: "Work",
     items: [
-      { href: "/admin/tasks", icon: ClipboardList, label: "Tasks" },
-      { href: "/admin/contracts", icon: FileText, label: "Contracts" },
-      { href: "/admin/messages", icon: MessageSquare, label: "Messages" },
-      { href: "/admin/security", icon: ShieldCheck, label: "Security" },
+      { href: null, icon: ClipboardList, label: "Tasks" },
+      { href: null, icon: MessageSquare, label: "Messages" },
+      { href: null, icon: ShieldCheck, label: "Security" },
       { href: "/admin/qr-codes", icon: QrCode, label: "QR Codes" },
     ],
   },
   {
     label: "Insights",
     items: [
-      { href: "/admin/reports", icon: BarChart, label: "Reports" },
-      { href: "/admin/pricing", icon: Tag, label: "Pricing" },
+      { href: null, icon: BarChart, label: "Reports" },
+      { href: null, icon: Tag, label: "Pricing" },
     ],
   },
   {
@@ -238,6 +239,7 @@ const activePath = Astro.url.pathname;
 
       html.dark {
         --admin-bg: #111827;
+        --admin-surface: #1f2937;
         --admin-text: #f3f4f6;
         --admin-accent: #374151;
         --admin-border: rgba(255,255,255,0.1);
@@ -260,13 +262,13 @@ const activePath = Astro.url.pathname;
 
       /* Borders */
       html.dark .border-\[\#e5e7eb\] {
-        border-color: rgba(255,255,255,0.1) !important;
+        border-color: rgba(255,255,255,0.06) !important;
       }
       html.dark .divide-\[\#f3f4f6\] > * + * {
-        border-color: rgba(255,255,255,0.07) !important;
+        border-color: rgba(255,255,255,0.04) !important;
       }
       html.dark .divide-\[\#e5e7eb\] > * + * {
-        border-color: rgba(255,255,255,0.1) !important;
+        border-color: rgba(255,255,255,0.04) !important;
       }
 
       /* Text colors */
@@ -276,6 +278,20 @@ const activePath = Astro.url.pathname;
       html.dark .text-\[\#9ca3af\] { color: #6b7280 !important; }
       html.dark .text-gray-900    { color: #f3f4f6 !important; }
       html.dark .text-gray-400    { color: #6b7280 !important; }
+
+      /* Search bar capsule — override dark input bg so it stays transparent */
+      html.dark input.search-input-override {
+        background-color: transparent !important;
+        border-color: transparent !important;
+        color: #f3f4f6 !important;
+      }
+
+      /* Capsule focus highlight */
+      #global-search-bar:focus-within {
+        border-color: var(--admin-primary) !important;
+        background: var(--admin-surface, var(--admin-bg)) !important;
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--admin-primary) 20%, transparent);
+      }
 
       /* Inputs & selects */
       html.dark input:not([type="color"]):not([type="checkbox"]),
@@ -329,6 +345,9 @@ const activePath = Astro.url.pathname;
       /* Modal overlay */
       html.dark .fixed.inset-0.bg-black\/50 { background-color: rgba(0,0,0,0.7) !important; }
       html.dark .bg-\[\#f3f4f6\].rounded-xl  { background-color: #1f2937 !important; }
+
+      /* Contacts page sticky filter header — always matches page background */
+      .contacts-sticky-header { background: var(--admin-bg, #f9fafb); }
 
       .main-header {
         border-bottom: 1px solid var(--admin-border);
@@ -533,42 +552,51 @@ const activePath = Astro.url.pathname;
         style="display: flex !important;"
       >
         <header class="px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class={`h-10 w-10 shrink-0 overflow-hidden bg-white/10 flex items-center justify-center ${c.logoShape === 'circle' ? 'rounded-full' : 'rounded-md'}`}>
-                <img
-                  src={c.logo}
-                  alt={c.venueName}
-                  class="h-full w-full object-contain"
-                />
-              </div>
-              <div class="min-w-0">
-                <p class="text-[0.9rem] font-semibold leading-tight truncate" style="color: var(--admin-sidebar-text);">{c.venueName}</p>
-                <p class="text-[0.70rem] leading-tight truncate sidebar-muted">{c.tagline}</p>
-              </div>
-            </div>
-            <button
-              class="hamburger lg:hidden"
-              id="menu-close"
-              aria-label="Close menu"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
+          {c.logoShape === 'rectangle' ? (
+            /* ── Rectangle mode: logo spans full width, no name/tagline text ── */
+            <div class="flex items-center justify-between">
+              <img
+                src={c.logo}
+                alt={c.venueName}
+                class="h-10 w-full object-contain object-left"
+              />
+              <button
+                class="hamburger lg:hidden shrink-0 ml-2"
+                id="menu-close"
+                aria-label="Close menu"
               >
-                <line x1="18" y1="6" x2="6" y2="18"></line><line
-                  x1="6"
-                  y1="6"
-                  x2="18"
-                  y2="18"></line>
-              </svg>
-            </button>
-          </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          ) : (
+            /* ── Circle / Square mode: icon + name + tagline ── */
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class={`h-10 w-10 shrink-0 overflow-hidden bg-white/10 flex items-center justify-center ${c.logoShape === 'circle' ? 'rounded-full' : 'rounded-md'}`}>
+                  <img
+                    src={c.logo}
+                    alt={c.venueName}
+                    class="h-full w-full object-contain"
+                  />
+                </div>
+                <div class="min-w-0">
+                  <p class="text-[0.9rem] font-semibold leading-tight truncate" style="color: var(--admin-sidebar-text);">{c.venueName}</p>
+                  <p class="text-[0.70rem] leading-tight truncate sidebar-muted">{c.tagline}</p>
+                </div>
+              </div>
+              <button
+                class="hamburger lg:hidden"
+                id="menu-close"
+                aria-label="Close menu"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          )}
         </header>
 
         <nav class="flex-1 p-2 overflow-y-auto" aria-label="Main navigation">
@@ -598,19 +626,24 @@ const activePath = Astro.url.pathname;
                 <ul class="mt-0.5">
                   {items.map(({ href, icon: Icon, label }) => (
                     <li>
-                      <a
-                        href={href}
-                        class:list={[
-                          "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] transition",
-                          activePath === href ? "active" : "",
-                        ]}
-                      >
-                        <Icon
-                          className="w-3.5 h-3.5 shrink-0"
-                          aria-hidden="true"
-                        />
-                        {label}
-                      </a>
+                      {href ? (
+                        <a
+                          href={href}
+                          class:list={[
+                            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] transition",
+                            activePath === href ? "active" : "",
+                          ]}
+                        >
+                          <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                          {label}
+                        </a>
+                      ) : (
+                        <span class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] opacity-35 cursor-not-allowed select-none">
+                          <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                          {label}
+                          <span class="ml-auto text-[0.5rem] font-semibold uppercase tracking-wide opacity-70 bg-white/10 px-1.5 py-0.5 rounded-full">Soon</span>
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -680,13 +713,13 @@ const activePath = Astro.url.pathname;
               </div>
               <!-- ── Global Search ── -->
               <div class="relative" id="global-search-wrap">
-                <div class="flex items-center gap-1.5 h-8 px-3 border rounded-full text-xs transition"
-                  style="border-color: var(--admin-border); background: var(--admin-bg); color: var(--admin-muted);">
+                <div id="global-search-bar" class="flex items-center gap-1.5 h-8 px-3 border rounded-full text-xs transition-all duration-150"
+                  style="border-color: var(--admin-border); background: var(--admin-surface, var(--admin-bg)); color: var(--admin-muted);">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                   </svg>
                   <input id="global-search-input" type="text" placeholder="Search…" autocomplete="off"
-                    class="bg-transparent outline-none w-36 text-xs placeholder:text-(--admin-muted)"
+                    class="bg-transparent outline-none w-36 text-xs placeholder:text-(--admin-muted) search-input-override"
                     style="color: var(--admin-text);" />
                 </div>
                 <div id="global-search-results" hidden

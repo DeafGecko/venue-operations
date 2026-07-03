@@ -229,7 +229,7 @@ export default function BookingTable({ initialBookings }: Props) {
                 <td className="px-3 py-2 text-xs text-[#6b7280] hidden sm:table-cell">{b.guestCount}</td>
                 <td className="px-3 py-2 text-xs font-medium text-[#111827] hidden md:table-cell">${(b.totalPrice || 0).toFixed(2)}</td>
                 <td className="px-3 py-2">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle(deriveStatus(b))}`}>
+                  <span className={`inline-flex items-center justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle(deriveStatus(b))}`}>
                     {statusLabel(deriveStatus(b))}
                   </span>
                 </td>

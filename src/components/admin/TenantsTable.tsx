@@ -150,7 +150,7 @@ export default function TenantsTable() {
                     </td>
                     <td className="px-3 py-2 text-sm text-[#111827]">{t.rentAmount ? `$${t.rentAmount.toLocaleString()}` : '—'}</td>
                     <td className="px-3 py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle[status]}`}>
+                      <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle[status]}`}>
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                       </span>
                     </td>

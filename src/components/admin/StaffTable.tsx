@@ -195,7 +195,7 @@ export default function StaffTable() {
                     {s.startDate && <p className="text-[0.6rem] text-[#9ca3af]">Since {new Date(s.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>}
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium capitalize ${roleStyle[s.role || ''] ?? 'bg-[#6b7280] text-white'}`}>
+                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium capitalize ${roleStyle[s.role || ''] ?? 'bg-[#6b7280] text-white'}`}>
                       {s.role || '—'}
                     </span>
                   </td>
@@ -217,7 +217,7 @@ export default function StaffTable() {
                       : (s.shiftStart && s.shiftEnd) ? `${s.shiftStart} – ${s.shiftEnd}` : '—'}
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-medium capitalize ${statusStyle[s.status || 'inactive']}`}>
+                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium capitalize ${statusStyle[s.status || 'inactive']}`}>
                       {s.status || 'inactive'}
                     </span>
                   </td>

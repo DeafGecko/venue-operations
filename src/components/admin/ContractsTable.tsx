@@ -153,91 +153,156 @@ function isExpired(endDate?: string, status?: ContractStatus): boolean {
 // ── Add / Edit form modal ─────────────────────────────────────────────────────
 function ContractFormModal({ initial, onSave, onClose }: {
   initial?: Partial<Contract>;
-  onSave:   (data: Partial<Contract>) => Promise<void>;
+  onSave:   (data: Partial<Contract>, files: File[]) => Promise<void>;
   onClose:  () => void;
 }) {
   const [form, setForm] = useState<Partial<Contract>>({
     title: '', contractType: 'rental', status: 'draft',
     notes: '', startDate: '', endDate: '',
-    contactName: '', contactEmail: '', contactId: '',
+    contactName: '', contactEmail: '',
+    contactId: initial?.contactId ?? `manual-${Date.now()}`,
     ...initial,
   });
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving]     = useState(false);
+  const [files, setFiles]       = useState<File[]>([]);
+  const [dragging, setDragging] = useState(false);
 
   const set = (k: keyof Contract, v: any) => setForm(f => ({ ...f, [k]: v }));
+
+  const addFiles = (incoming: FileList | null) => {
+    if (!incoming) return;
+    const allowed = Array.from(incoming).filter(f =>
+      f.type === 'application/pdf' || f.type.startsWith('image/')
+    );
+    setFiles(prev => {
+      const names = new Set(prev.map(f => f.name));
+      return [...prev, ...allowed.filter(f => !names.has(f.name))];
+    });
+  };
 
   const handleSave = async () => {
     if (!form.title?.trim()) { alert('Title is required.'); return; }
     if (!form.contactName?.trim()) { alert('Contact name is required.'); return; }
     setSaving(true);
-    try { await onSave(form); onClose(); }
+    try { await onSave(form, files); onClose(); }
     catch (e: any) { alert(e.message); }
     finally { setSaving(false); }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 flex flex-col gap-4" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden max-h-[90vh]"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[#e5e7eb] shrink-0">
           <p className="text-sm font-semibold text-[#111827]">{initial?._id ? 'Edit Contract' : 'New Contract'}</p>
           <button type="button" onClick={onClose} className="text-[#9ca3af] hover:text-[#374151] text-lg">&times;</button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2">
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Contract Title</label>
-            <input value={form.title ?? ''} onChange={e => set('title', e.target.value)}
-              placeholder="e.g. Vendor Agreement 2026"
-              className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Contract Title *</label>
+              <input value={form.title ?? ''} onChange={e => set('title', e.target.value)}
+                placeholder="e.g. Vendor Agreement 2026"
+                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+            </div>
+
+            <div>
+              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Contact Name *</label>
+              <input value={form.contactName ?? ''} onChange={e => set('contactName', e.target.value)}
+                placeholder="Full name"
+                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+            </div>
+            <div>
+              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Contact Email</label>
+              <input value={form.contactEmail ?? ''} onChange={e => set('contactEmail', e.target.value)}
+                placeholder="email@example.com" type="email"
+                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+            </div>
+
+            <div>
+              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Type</label>
+              <select value={form.contractType} onChange={e => set('contractType', e.target.value as ContractType)} title="Contract type"
+                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]">
+                {ALL_TYPES.map(t => <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Status</label>
+              <select value={form.status} onChange={e => set('status', e.target.value as ContractStatus)} title="Contract status"
+                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]">
+                {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Start Date</label>
+              <input type="date" title="Start date" value={form.startDate ?? ''} onChange={e => set('startDate', e.target.value)}
+                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+            </div>
+            <div>
+              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">End / Expiry Date</label>
+              <input type="date" title="End / expiry date" value={form.endDate ?? ''} onChange={e => set('endDate', e.target.value)}
+                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Notes</label>
+              <textarea value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} rows={2} title="Notes"
+                className="w-full border border-[#e5e7eb] rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+            </div>
           </div>
 
+          {/* Drag-and-drop zone */}
           <div>
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Contact Name</label>
-            <input value={form.contactName ?? ''} onChange={e => set('contactName', e.target.value)}
-              placeholder="Full name"
-              className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
-          </div>
-          <div>
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Contact Email</label>
-            <input value={form.contactEmail ?? ''} onChange={e => set('contactEmail', e.target.value)}
-              placeholder="email@example.com" type="email"
-              className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
-          </div>
+            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">
+              Attachments <span className="normal-case font-normal text-[#9ca3af]">(optional — PDF, JPG, PNG)</span>
+            </label>
+            <div
+              onDragOver={e => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); }}
+              className={`border-2 border-dashed rounded-lg px-4 py-6 text-center transition-colors ${
+                dragging ? 'border-(--admin-primary) bg-blue-50/40' : 'border-[#e5e7eb] hover:border-[#d1d5db]'
+              }`}
+            >
+              <Upload className="w-6 h-6 mx-auto mb-2 text-[#d1d5db]" />
+              <p className="text-xs text-[#6b7280]">
+                Drag & drop files here, or{' '}
+                <label className="text-(--admin-primary) cursor-pointer underline underline-offset-2">
+                  browse
+                  <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" className="hidden"
+                    onChange={e => { addFiles(e.target.files); e.target.value = ''; }} />
+                </label>
+              </p>
+              <p className="text-[0.6rem] text-[#9ca3af] mt-1">PDF · JPG · PNG · GIF · WEBP</p>
+            </div>
 
-          <div>
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Type</label>
-            <select value={form.contractType} onChange={e => set('contractType', e.target.value as ContractType)} title="Contract type"
-              className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]">
-              {ALL_TYPES.map(t => <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Status</label>
-            <select value={form.status} onChange={e => set('status', e.target.value as ContractStatus)} title="Contract status"
-              className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]">
-              {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>)}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Start Date</label>
-            <input type="date" title="Start date" value={form.startDate ?? ''} onChange={e => set('startDate', e.target.value)}
-              className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
-          </div>
-          <div>
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">End / Expiry Date</label>
-            <input type="date" title="End / expiry date" value={form.endDate ?? ''} onChange={e => set('endDate', e.target.value)}
-              className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
-          </div>
-
-          <div className="col-span-2">
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Notes</label>
-            <textarea value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} rows={2} title="Notes"
-              className="w-full border border-[#e5e7eb] rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+            {files.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {files.map((f, i) => (
+                  <li key={i} className="flex items-center gap-2 text-xs text-[#374151] bg-[#f9fafb] border border-[#e5e7eb] rounded-md px-3 py-1.5">
+                    {f.type.startsWith('image/')
+                      ? <Image className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      : <FileText className="w-3.5 h-3.5 text-red-400 shrink-0" />}
+                    <span className="flex-1 truncate">{f.name}</span>
+                    <span className="text-[#9ca3af] shrink-0">{(f.size / 1024).toFixed(0)} KB</span>
+                    <button type="button" title="Remove" onClick={() => setFiles(p => p.filter((_, j) => j !== i))}
+                      className="text-[#d1d5db] hover:text-red-400 transition shrink-0">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
-        <div className="flex gap-2 pt-1">
+        {/* Footer */}
+        <div className="flex gap-2 px-6 py-4 border-t border-[#e5e7eb] shrink-0">
           <button type="button" onClick={onClose}
             className="flex-1 py-2 text-xs border border-[#e5e7eb] rounded-md hover:bg-[#f9fafb] transition">Cancel</button>
           <button type="button" onClick={handleSave} disabled={saving}
@@ -283,21 +348,39 @@ export default function ContractsTable() {
     });
   }, [contracts, search, filterStatus, filterType]);
 
-  const handleCreate = async (form: Partial<Contract>) => {
-    await fetch('/api/admin/contracts', {
+  const handleCreate = async (form: Partial<Contract>, files: File[]) => {
+    const res = await fetch('/api/admin/contracts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
-    }).then(r => { if (!r.ok) throw new Error('Failed to create'); });
+    });
+    if (!res.ok) throw new Error('Failed to create contract');
+    const { _id } = await res.json();
+    // upload any attached files
+    for (const file of files) {
+      await fetch(`/api/admin/contracts/${_id}?mode=attachment&filename=${encodeURIComponent(file.name)}&label=${encodeURIComponent(file.name)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file,
+      });
+    }
     await load();
   };
 
-  const handleUpdate = async (form: Partial<Contract>) => {
-    await fetch(`/api/admin/contracts/${form._id}`, {
+  const handleUpdate = async (form: Partial<Contract>, files: File[]) => {
+    const res = await fetch(`/api/admin/contracts/${form._id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
-    }).then(r => { if (!r.ok) throw new Error('Failed to update'); });
+    });
+    if (!res.ok) throw new Error('Failed to update contract');
+    for (const file of files) {
+      await fetch(`/api/admin/contracts/${form._id}?mode=attachment&filename=${encodeURIComponent(file.name)}&label=${encodeURIComponent(file.name)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file,
+      });
+    }
     await load();
   };
 

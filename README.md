@@ -16,6 +16,7 @@
 ## What's Built
 
 ### Admin Panel
+
 - **Auth** — login, invite users, forgot/reset password, role-based access
 - **Dashboard** — revenue, reservations, occupancy, and QR scan analytics
 - **Bookings** — create, search, filter, edit, bulk delete, and export reservations
@@ -29,6 +30,7 @@
 - **Data Management** — import/export Sanity-backed data types
 
 ### Public-Facing
+
 - **Booking form** — public event inquiry/booking page
 - **RSVP** — token-based RSVP flow via QR code
 - **Client portal** — client login and dashboard (in progress)
@@ -37,31 +39,38 @@
 
 ## Tech Stack
 
-| Layer | Technology |
-| :--- | :--- |
-| Framework | Astro 4 + React 19 |
-| Styling | Tailwind CSS 4 |
-| CMS | Sanity v3 |
-| Database | Cloudflare D1 (SQLite) |
-| Hosting | Cloudflare Workers |
-| Email | Resend |
-| PDF | @react-pdf/renderer |
-| Charts | Chart.js + react-chartjs-2 |
-| QR Codes | qrcode |
-| CSV | PapaParse |
-| Icons | Lucide React |
+| Layer     | Technology                 |
+| :-------- | :------------------------- |
+| Framework | Astro 4 + React 19         |
+| Styling   | Tailwind CSS 4             |
+| CMS       | Sanity v3                  |
+| Database  | Cloudflare D1 (SQLite)     |
+| Hosting   | Cloudflare Workers         |
+| Email     | Resend                     |
+| PDF       | @react-pdf/renderer        |
+| Charts    | Chart.js + react-chartjs-2 |
+| QR Codes  | qrcode                     |
+| CSV       | PapaParse                  |
+| Icons     | Lucide React               |
 
 ---
 
 ## Getting Started
 
-### Prerequisites
+Follow these steps to run the project on your computer.
+
+### 1. What You Need
+
+Install or create these first:
+
 - Node.js 22+
 - Sanity account (free tier works)
 - Cloudflare account (free tier works)
 - Resend account (free tier works)
 
-### Clone & Install
+### 2. Download the Project
+
+Open a terminal and run:
 
 ```bash
 git clone https://github.com/DeafGecko/venue-operations.git
@@ -69,9 +78,19 @@ cd venue-operations
 npm install
 ```
 
-### Environment Variables
+### 3. Set Up Wrangler
 
-Create a `.env` file in the project root:
+The real `wrangler.toml` file is not saved in Git because it holds settings for your machine. Copy the example file to make your own:
+
+```bash
+cp wrangler.toml.example wrangler.toml
+```
+
+Open `wrangler.toml` and replace the example values with your own Cloudflare and Sanity settings.
+
+### 4. Add Environment Variables
+
+Create a file named `.env` in the main project folder. Add your own values:
 
 ```env
 SANITY_PROJECT_ID=your_project_id
@@ -84,21 +103,27 @@ FROM_EMAIL=noreply@yourdomain.com
 PUBLIC_BASE_URL=http://localhost:4321
 ```
 
-### Run Locally
+Do not share this file or commit it to Git. It contains private keys and passwords.
+
+### 5. Run the Project
+
+Start the website:
 
 ```bash
-# Admin + public site
 npm run dev
+```
 
-# Sanity Studio (separate tab)
+To use Sanity Studio, open a second terminal and run:
+
+```bash
 npm run studio
 ```
 
-Open [http://localhost:4321/admin/login](http://localhost:4321/admin/login)
+Then open [http://localhost:4321/admin/login](http://localhost:4321/admin/login) in your browser.
 
-### Deploy to Cloudflare
+### 6. Deploy to Cloudflare
 
-Upload secrets once:
+Upload your private values one time:
 
 ```bash
 npx wrangler secret put SANITY_API_TOKEN
@@ -107,7 +132,7 @@ npx wrangler secret put ADMIN_PASSWORD
 npx wrangler secret put RESEND_API_KEY
 ```
 
-Then deploy:
+Build and deploy the project:
 
 ```bash
 npm run build && npx wrangler deploy
@@ -117,12 +142,12 @@ npm run build && npx wrangler deploy
 
 ## Role Access
 
-| Role | View | Edit | Login Management |
-| :--- | :---: | :---: | :---: |
-| Admin | ✅ | ✅ | ✅ |
-| Manager | ✅ | ✅ | ❌ |
-| Developer | ✅ | ❌ | ❌ |
-| Viewer | ✅ | ❌ | ❌ |
+| Role      | View | Edit | Login Management |
+| :-------- | :--: | :--: | :--------------: |
+| Admin     |  ✅  |  ✅  |        ✅        |
+| Manager   |  ✅  |  ✅  |        ❌        |
+| Developer |  ✅  |  ❌  |        ❌        |
+| Viewer    |  ✅  |  ❌  |        ❌        |
 
 ---
 
@@ -141,5 +166,6 @@ npm run build && npx wrangler deploy
 ---
 
 ## License
+
 © 2026 Dwight Rogers / 09 Labs. All rights reserved.
 This is proprietary software. Unauthorized copying, distribution, or use is prohibited.

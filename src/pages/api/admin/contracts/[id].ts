@@ -2,20 +2,13 @@ import type { APIRoute } from 'astro';
 import { sanityClient } from '../../../../lib/sanity';
 
 async function uploadToSanity(bytes: ArrayBuffer, contentType: string, filename: string) {
-  const projectId = import.meta.env.SANITY_PROJECT_ID;
-  const dataset   = import.meta.env.SANITY_DATASET || 'production';
-  const token     = import.meta.env.SANITY_API_TOKEN;
-  const isImage   = contentType.startsWith('image/');
-  const endpoint  = isImage ? 'images' : 'files';
-
-  const res = await fetch(
-    `https://api.sanity.io/v2024-05-23/assets/${endpoint}/${projectId}/${dataset}?filename=${encodeURIComponent(filename)}`,
-    { method: 'POST', headers: { 'Content-Type': contentType, Authorization: `Bearer ${token}` }, body: bytes }
-  );
-  if (!res.ok) throw new Error(await res.text());
-  const data = await res.json();
-  const doc  = data.document ?? data;
-  return { assetRef: doc._id as string, isImage };
+  const isImage = contentType.startsWith('image/');
+  const kind    = isImage ? 'image' : 'file';
+  const asset   = await sanityClient.assets.upload(kind, Buffer.from(bytes), {
+    filename,
+    contentType,
+  });
+  return { assetRef: asset._id, isImage };
 }
 
 export const PATCH: APIRoute = async ({ params, request }) => {

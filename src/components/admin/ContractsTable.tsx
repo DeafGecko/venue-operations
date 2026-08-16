@@ -249,11 +249,6 @@ function ContractFormModal({ initial, onSave, onClose }: {
                 className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
             </div>
 
-            <div className="col-span-2">
-              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Notes</label>
-              <textarea value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} rows={2} title="Notes"
-                className="w-full border border-[#e5e7eb] rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#374151]" />
-            </div>
           </div>
 
           {/* Drag-and-drop zone */}
@@ -298,6 +293,13 @@ function ContractFormModal({ initial, onSave, onClose }: {
                 ))}
               </ul>
             )}
+          </div>
+
+          {/* Notes — below the drop zone */}
+          <div>
+            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Notes</label>
+            <textarea value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} rows={2} title="Notes"
+              className="w-full border border-[#e5e7eb] rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#374151]" />
           </div>
         </div>
 
@@ -393,12 +395,14 @@ export default function ContractsTable() {
   const handlePdfUpload = async (id: string, file: File) => {
     setUploadingId(id);
     try {
-      const res = await fetch(`/api/admin/contracts/${id}?filename=${encodeURIComponent(file.name)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/pdf' },
-        body: file,
-      });
-      if (!res.ok) throw new Error('Upload failed');
+      const res = await fetch(
+        `/api/admin/contracts/${id}?mode=signed-pdf&filename=${encodeURIComponent(file.name)}`,
+        { method: 'PATCH', headers: { 'Content-Type': file.type || 'application/pdf' }, body: file }
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: 'Upload failed' }));
+        throw new Error(body.error ?? 'Upload failed');
+      }
       await load();
     } catch (e: any) { alert(e.message); }
     finally { setUploadingId(null); }

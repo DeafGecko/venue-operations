@@ -1,4 +1,4 @@
-# The Factory at Franklin, TN – Venue Operations
+# Venue Operations
 
 [![Astro](https://img.shields.io/badge/Astro-4-FF5D01?logo=astro&logoColor=white)](https://astro.build)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
@@ -7,35 +7,31 @@
 [![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-FF6F00?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-> Full-stack venue operations platform — book, manage, and track with an edge-deployed, serverless architecture.
+> A personal full-stack project built for fun and the challenge — a complete venue operations platform deployed on the edge.
 
 **Live:** [venue-operations-api.dwirog.workers.dev](https://venue-operations-api.dwirog.workers.dev)
 
 ---
 
-## Features
+## What's Built
 
 ### Admin Panel
-- **Secure login** — email + password with role-based access (Admin, Manager, Developer, Viewer)
+- **Auth** — login, invite users, forgot/reset password, role-based access
 - **Dashboard** — revenue, reservations, occupancy, and QR scan analytics
-- **Bookings** — create, search, filter, edit, and manage reservations
-- **Calendar** — interactive monthly view with reservation indicators
-- **Bills & Payments** — generate invoices, track balances, record payments
+- **Bookings** — create, search, filter, edit, bulk delete, and export reservations
+- **Calendar** — monthly view with reservation indicators
+- **Bills & Payments** — invoices, balances, and payment tracking
 - **Spaces** — configure venues, rooms, vendor spaces, and booths
-- **Clients, Vendors, Tenants** — manage all contacts in one place
-- **QR Scans** — track check-ins and access logs
+- **Clients / Vendors / Tenants / Staff** — full CRUD with CSV import/export
+- **QR Codes** — generate event QR codes, track RSVPs and check-ins
 - **Login Management** — invite users, assign roles, reset passwords, block accounts
-- **Settings** — brand colors, logo, typography — all configurable via Sanity
+- **Settings** — brand colors, logo, and typography via Sanity CMS
+- **Data Management** — import/export Sanity-backed data types
 
-### Architecture
-- **Astro 4** — islands architecture, server-side rendered
-- **React 19** — interactive dashboards, forms, and tables
-- **Sanity v3** — headless CMS for all content and settings
-- **Cloudflare Workers** — global edge deployment, serverless APIs
-- **Cloudflare D1** — SQLite database for reservations and analytics
-- **Tailwind CSS 4** — utility-first styling
-- **Resend** — transactional email (invites, password resets)
-- **TypeScript** — end-to-end type safety
+### Public-Facing
+- **Booking form** — public event inquiry/booking page
+- **RSVP** — token-based RSVP flow via QR code
+- **Client portal** — client login and dashboard (in progress)
 
 ---
 
@@ -43,12 +39,16 @@
 
 | Layer | Technology |
 | :--- | :--- |
-| Frontend | Astro 4 + React 19 |
-| Styling | Tailwind CSS 4 + Inter |
+| Framework | Astro 4 + React 19 |
+| Styling | Tailwind CSS 4 |
 | CMS | Sanity v3 |
 | Database | Cloudflare D1 (SQLite) |
 | Hosting | Cloudflare Workers |
-| Emails | Resend |
+| Email | Resend |
+| PDF | @react-pdf/renderer |
+| Charts | Chart.js + react-chartjs-2 |
+| QR Codes | qrcode |
+| CSV | PapaParse |
 | Icons | Lucide React |
 
 ---
@@ -57,9 +57,9 @@
 
 ### Prerequisites
 - Node.js 22+
-- Sanity account (free)
-- Cloudflare account (free)
-- Resend account (free) — for invite/password reset emails
+- Sanity account (free tier works)
+- Cloudflare account (free tier works)
+- Resend account (free tier works)
 
 ### Clone & Install
 
@@ -87,14 +87,18 @@ PUBLIC_BASE_URL=http://localhost:4321
 ### Run Locally
 
 ```bash
+# Admin + public site
 npm run dev
+
+# Sanity Studio (separate tab)
+npm run studio
 ```
 
 Open [http://localhost:4321/admin/login](http://localhost:4321/admin/login)
 
 ### Deploy to Cloudflare
 
-Upload secrets (one-time setup):
+Upload secrets once:
 
 ```bash
 npx wrangler secret put SANITY_API_TOKEN
@@ -106,11 +110,7 @@ npx wrangler secret put RESEND_API_KEY
 Then deploy:
 
 ```bash
-npm run build && node -e "
-const fs=require('fs');
-const f='dist/_worker.js/chunks/'+fs.readdirSync('dist/_worker.js/chunks').find(f=>f.includes('astro-renderers'));
-fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('var channel = new MessageChannel(),','if(typeof MessageChannel===\"undefined\"){globalThis.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:(d)=>{if(this.port1.onmessage)setTimeout(()=>this.port1.onmessage({data:d}),0)}}}}}var channel = new MessageChannel(),'));
-" && echo "_worker.js" > dist/.assetsignore && npx wrangler deploy
+npm run build && npx wrangler deploy
 ```
 
 ---
@@ -126,6 +126,20 @@ fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('var channel = new MessageC
 
 ---
 
-## License
+## Roadmap / Next Phase
 
-Private — The Factory at Franklin, TN. All rights reserved.
+- [ ] Client portal — full dashboard for clients to view their bookings and invoices
+- [ ] Stripe integration — online payments for bookings and invoices
+- [ ] Contracts — digital contract generation and signing flow
+- [ ] Reports — custom date-range reporting and PDF export
+- [ ] Notifications — in-app and email notification system
+- [ ] Floor plans — visual space layout builder
+- [ ] Inventory & Equipment — asset tracking per event
+- [ ] Tasks — internal task management for staff
+- [ ] Maintenance — maintenance request tracking
+
+---
+
+## License
+© 2026 Dwight Rogers / 09 Labs. All rights reserved.
+This is proprietary software. Unauthorized copying, distribution, or use is prohibited.

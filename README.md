@@ -9,7 +9,7 @@
 
 > Full-stack venue operations platform — book, manage, and track with an edge-deployed, serverless architecture.
 
-**Live:** [venue-operations-api.dwirog.workers.dev](https://venue-operations-api.dwirog.workers.dev)
+**Live:** [https://venue-operations-api.dwirog.workers.dev/admin/login)
 
 ---
 

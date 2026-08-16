@@ -1,7 +1,0 @@
-name = "venue-operations-api"
-compatibility_date = "2024-12-30"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "venue-operations-d1"
-database_id = "23e71458-17d2-491a-b725-ee2075043ab5"

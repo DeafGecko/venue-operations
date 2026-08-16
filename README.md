@@ -9,7 +9,7 @@
 
 > A personal full-stack project built for fun and the challenge — a complete venue operations platform deployed on the edge.
 
-**Live:** [https://venue-operations-api.dwirog.workers.dev/admin/login)
+**Live:** [https://venue-operations-api.dwirog.workers.dev/admin/login/admin/login)
 
 ---
 

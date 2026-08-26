@@ -616,34 +616,55 @@ const activePath = Astro.url.pathname;
           {
             demo ? (
               navGroups.map(({ label: groupLabel, items }) => (
-                <div class="mb-1">
-                  <p class="px-2.5 py-1.5 text-[0.6rem] font-semibold uppercase tracking-widest sidebar-muted">
+                groupLabel === "Core" ? (
+                  <div class="mb-1">
+                    <p class="px-2.5 py-1.5 text-[0.6rem] font-semibold uppercase tracking-widest sidebar-muted">
+                      {groupLabel}
+                    </p>
+                    <ul class="mt-0.5">
+                      {items.map(({ href, icon: Icon, label }) => (
+                        <li>
+                          {href ? (
+                            <a
+                              href={href}
+                              class="active flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] transition"
+                            >
+                              <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                              {label}
+                            </a>
+                          ) : (
+                            <span
+                              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] opacity-55 cursor-default select-none"
+                              aria-disabled="true"
+                            >
+                              <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                              {label}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div
+                    class="flex items-center justify-between px-2.5 py-1.5 mb-1 text-[0.6rem] font-semibold uppercase tracking-widest sidebar-muted cursor-default select-none"
+                    aria-disabled="true"
+                  >
                     {groupLabel}
-                  </p>
-                  <ul class="mt-0.5">
-                    {items.map(({ href, icon: Icon, label }) => (
-                      <li>
-                        {href ? (
-                          <a
-                            href={href}
-                            class="active flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] transition"
-                          >
-                            <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                            {label}
-                          </a>
-                        ) : (
-                          <span
-                            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] opacity-55 cursor-default select-none"
-                            aria-disabled="true"
-                          >
-                            <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                            {label}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                    <svg
+                      class="w-3 h-3 shrink-0 -rotate-90"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
+                )
               ))
             ) : navGroups.map(({ label: groupLabel, items }) => (
               <details

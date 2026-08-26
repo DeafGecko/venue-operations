@@ -142,14 +142,13 @@ const adminNavGroups = [
 ];
 
 const navGroups = demo
-  ? [
-      {
-        label: "Portfolio",
-        items: [
-          { href: "/demo", icon: LayoutDashboard, label: "Dashboard" },
-        ],
-      },
-    ]
+  ? adminNavGroups.map((group) => ({
+      ...group,
+      items: group.items.map((item) => ({
+        ...item,
+        href: item.label === "Dashboard" ? "/demo" : null,
+      })),
+    }))
   : adminNavGroups;
 
 // active group = whichever group contains the current page (default open)
@@ -162,6 +161,7 @@ const activePath = Astro.url.pathname;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} · {c.venueName}</title>
+    {demo && <link rel="icon" href="data:," />}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -614,7 +614,38 @@ const activePath = Astro.url.pathname;
 
         <nav class="flex-1 p-2 overflow-y-auto" aria-label="Main navigation">
           {
-            navGroups.map(({ label: groupLabel, items }) => (
+            demo ? (
+              navGroups.map(({ label: groupLabel, items }) => (
+                <div class="mb-1">
+                  <p class="px-2.5 py-1.5 text-[0.6rem] font-semibold uppercase tracking-widest sidebar-muted">
+                    {groupLabel}
+                  </p>
+                  <ul class="mt-0.5">
+                    {items.map(({ href, icon: Icon, label }) => (
+                      <li>
+                        {href ? (
+                          <a
+                            href={href}
+                            class="active flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] transition"
+                          >
+                            <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                            {label}
+                          </a>
+                        ) : (
+                          <span
+                            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] opacity-55 cursor-default select-none"
+                            aria-disabled="true"
+                          >
+                            <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                            {label}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            ) : navGroups.map(({ label: groupLabel, items }) => (
               <details
                 class="nav-group mb-1"
                 open={
@@ -668,13 +699,13 @@ const activePath = Astro.url.pathname;
         <footer class="p-4 sidebar-border-top shrink-0 space-y-1">
           <!-- Login Management -->
           {demo ? (
-            <a
-              href="/admin/login"
-              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] text-white/70 hover:text-white hover:bg-white/10 transition"
+            <span
+              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[0.65rem] opacity-55 cursor-default select-none"
+              aria-disabled="true"
             >
-              <LogOut className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              Admin Login
-            </a>
+              <UserCog className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              Login Management
+            </span>
           ) : (
             <>
               <a

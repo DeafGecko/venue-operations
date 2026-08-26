@@ -3,7 +3,7 @@ import { sanityClient } from '../../../../lib/sanity';
 import { generateToken, getTokenExpiry } from '../../../../lib/auth';
 import { sendPasswordResetEmail } from '../../../../lib/email';
 
-export const POST: APIRoute = async ({ request, redirect }) => {
+export const POST: APIRoute = async ({ request, redirect, locals }) => {
   try {
     const formData = await request.formData();
     const email = formData.get('email')?.toString().trim();
@@ -39,12 +39,13 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     const baseUrl = import.meta.env.PUBLIC_BASE_URL || 'http://localhost:4321';
     const resetUrl = `${baseUrl}/admin/reset-password?token=${token}`;
 
+    const env = locals.runtime.env;
     await sendPasswordResetEmail({
       to: email,
       name: user.name,
       resetUrl,
       venueName: 'Venue Operations', // could fetch from settings
-    });
+    }, env.RESEND_API_KEY, env.FROM_EMAIL);
 
     return redirect('/admin/forgot-password?success=1');
   } catch (error: any) {

@@ -4,7 +4,7 @@ import { sanityClient } from '../../../../lib/sanity';
 import { generateToken, getTokenExpiry } from '../../../../lib/auth';
 import { sendInviteEmail } from '../../../../lib/email';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const body = await request.json();
     const { name, email, role = 'viewer' } = body;
@@ -41,13 +41,14 @@ export const POST: APIRoute = async ({ request }) => {
     const inviteUrl = `${baseUrl}/admin/set-password?token=${token}`;
 
     // Send email (requires Resend configured)
+    const env = locals.runtime.env;
     await sendInviteEmail({
       to: email,
       name,
       inviteUrl,
       inviterName: 'Admin', // Replace with actual inviter name later
       venueName: 'Venue Operations',
-    });
+    }, env.RESEND_API_KEY, env.FROM_EMAIL);
 
     return new Response(JSON.stringify({ success: true, userId: newUser._id }), {
       status: 200,

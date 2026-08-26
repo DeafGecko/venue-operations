@@ -9,7 +9,16 @@
 
 > A personal full-stack project built for fun and the challenge — a complete venue operations platform deployed on the edge.
 
-**Live:** [https://venue-operations-api.dwirog.workers.dev/admin/login/admin/login)
+**Live:** [venue-operations-api.dwirog.workers.dev](https://venue-operations-api.dwirog.workers.dev)
+
+## Demo Access
+
+For portfolio and review purposes:
+
+- **URL:** [Admin login](https://venue-operations-api.dwirog.workers.dev/admin/login)
+- **Email:** `demo@09labs.dev`
+- **Password:** `[demo password]`
+- **Role:** Viewer
 
 ---
 

@@ -9,12 +9,11 @@ interface InviteEmailParams {
   venueName: string;
 }
 
-export async function sendInviteEmail({ to, name, inviteUrl, inviterName, venueName }: InviteEmailParams) {
-  const apiKey = import.meta.env.RESEND_API_KEY;
+export async function sendInviteEmail({ to, name, inviteUrl, inviterName, venueName }: InviteEmailParams, apiKey: string, fromEmail?: string) {
   if (!apiKey) throw new Error('RESEND_API_KEY is not configured');
 
   const resend = new Resend(apiKey);
-  const fromEmail = import.meta.env.FROM_EMAIL || 'onboarding@resend.dev';
+  fromEmail = fromEmail || 'onboarding@resend.dev';
 
   const { error } = await resend.emails.send({
     from: `${venueName} <${fromEmail}>`,
@@ -46,12 +45,11 @@ interface PasswordResetEmailParams {
   venueName: string;
 }
 
-export async function sendPasswordResetEmail({ to, name, resetUrl, venueName }: PasswordResetEmailParams) {
-  const apiKey = import.meta.env.RESEND_API_KEY;
+export async function sendPasswordResetEmail({ to, name, resetUrl, venueName }: PasswordResetEmailParams, apiKey: string, fromEmail?: string) {
   if (!apiKey) throw new Error('RESEND_API_KEY is not configured');
 
   const resend = new Resend(apiKey);
-  const fromEmail = import.meta.env.FROM_EMAIL || 'onboarding@resend.dev';
+  fromEmail = fromEmail || 'onboarding@resend.dev';
 
   const { error } = await resend.emails.send({
     from: `${venueName} <${fromEmail}>`,

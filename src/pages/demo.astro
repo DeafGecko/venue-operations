@@ -1,0 +1,205 @@
+---
+import AdminLayout from "../layouts/AdminLayout.astro";
+import DashboardCharts from "../components/admin/DashboardCharts";
+import { CalendarCheck, CalendarDays, DollarSign, Users } from "lucide-react";
+
+const stats = [
+  { label: "Revenue", value: "$184,750", icon: DollarSign },
+  { label: "Bookings", value: 86, icon: CalendarDays },
+  { label: "Upcoming", value: 14, icon: CalendarCheck },
+  { label: "Clients", value: 63, icon: Users },
+];
+
+const monthly = [
+  { month: "Mar", revenue: 18200 },
+  { month: "Apr", revenue: 24600 },
+  { month: "May", revenue: 31800 },
+  { month: "Jun", revenue: 28900 },
+  { month: "Jul", revenue: 39750 },
+  { month: "Aug", revenue: 41500 },
+];
+
+const statusCounts = { paid: 58, partial: 19, unpaid: 9 };
+
+const revenueSlices = [
+  { label: "Wedding", value: 74200 },
+  { label: "Corporate", value: 48600 },
+  { label: "Celebration", value: 35950 },
+  { label: "Community", value: 26000 },
+];
+
+const recentBookings = [
+  {
+    account: "BK-2026-0086",
+    client: "Northstar Creative",
+    date: "Sep 18, 2026",
+    status: "paid",
+  },
+  {
+    account: "BK-2026-0085",
+    client: "Jordan & Taylor",
+    date: "Oct 3, 2026",
+    status: "partial",
+  },
+  {
+    account: "BK-2026-0084",
+    client: "Harbor Health Group",
+    date: "Sep 26, 2026",
+    status: "paid",
+  },
+  {
+    account: "BK-2026-0083",
+    client: "The Ellis Family",
+    date: "Nov 7, 2026",
+    status: "unpaid",
+  },
+  {
+    account: "BK-2026-0082",
+    client: "Civic Arts Council",
+    date: "Oct 15, 2026",
+    status: "paid",
+  },
+];
+
+const todayEvents = [
+  {
+    name: "Leadership Summit",
+    type: "Corporate",
+    time: "9:00 AM",
+    space: "Grand Hall",
+  },
+  {
+    name: "Morgan Reception",
+    type: "Wedding",
+    time: "4:30 PM",
+    space: "Garden Room",
+  },
+  {
+    name: "Local Makers Night",
+    type: "Community",
+    time: "7:00 PM",
+    space: "Gallery",
+  },
+];
+---
+
+<AdminLayout
+  title="Dashboard"
+  subtitle="Portfolio preview with sample data"
+  badge="Demo"
+  demo
+>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    {
+      stats.map(({ label, value, icon: Icon }) => (
+        <div class="bg-white border border-[#e5e7eb] rounded-xl p-4 shadow-sm flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-[#f3f4f6] shrink-0">
+            <Icon className="w-4 h-4 text-[#6b7280]" />
+          </div>
+          <div class="min-w-0">
+            <p class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">
+              {label}
+            </p>
+            <p class="text-xl font-light text-[#111827] leading-tight">
+              {value}
+            </p>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <DashboardCharts
+    monthly={monthly}
+    statusCounts={statusCounts}
+    revenueSlices={revenueSlices}
+    client:load
+  />
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <section
+      class="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden"
+    >
+      <header
+        class="px-4 py-3"
+        style="border-bottom: 1px solid var(--admin-border)"
+      >
+        <p
+          class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]"
+        >
+          Recent Bookings
+        </p>
+      </header>
+      <ul>
+        {
+          recentBookings.map((booking) => (
+            <li
+              class="flex items-center justify-between px-4 py-2.5"
+              style="border-bottom: 1px solid var(--admin-border)"
+            >
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-[#111827] truncate">
+                  {booking.client}
+                </p>
+                <p class="text-[0.65rem] text-[#9ca3af]">
+                  {booking.account} · {booking.date}
+                </p>
+              </div>
+              <span
+                class:list={[
+                  "ml-3 shrink-0 inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium text-white",
+                  booking.status === "paid"
+                    ? "bg-emerald-500"
+                    : booking.status === "partial"
+                      ? "bg-amber-500"
+                      : "bg-red-500",
+                ]}
+              >
+                {booking.status}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section
+      class="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden"
+    >
+      <header
+        class="px-4 py-3 flex items-center justify-between"
+        style="border-bottom: 1px solid var(--admin-border)"
+      >
+        <p
+          class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]"
+        >
+          Today's Events
+        </p>
+        <p class="text-[0.65rem] text-[#9ca3af]">Sample schedule</p>
+      </header>
+      <ul>
+        {
+          todayEvents.map((event) => (
+            <li
+              class="flex items-center gap-3 px-4 py-3"
+              style="border-bottom: 1px solid var(--admin-border)"
+            >
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-[#111827] truncate">
+                  {event.name}
+                </p>
+                <p class="text-[0.65rem] text-[#9ca3af] truncate">
+                  {event.type} · {event.space}
+                </p>
+              </div>
+              <span class="ml-auto text-[0.65rem] text-[#6b7280] shrink-0">
+                {event.time}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</AdminLayout>

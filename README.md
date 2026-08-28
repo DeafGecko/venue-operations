@@ -2,12 +2,9 @@
 
 > A personal full-stack project built for fun and the challenge — a complete venue operations platform deployed on the edge.
 
+## Live Demo
 
-## Demo Access
-
-For portfolio and review purposes:
-
-- **URL:** [Demo](https://venue-operations-api.dwirog.workers.dev/demo)
+[View the interactive demo](https://venue-operations-api.dwirog.workers.dev/demo)
 
 ---
 
@@ -50,91 +47,6 @@ For portfolio and review purposes:
 | QR Codes  | qrcode                     |
 | CSV       | PapaParse                  |
 | Icons     | Lucide React               |
-
----
-
-## Getting Started
-
-Follow these steps to run the project on your computer.
-
-### 1. What You Need
-
-Install or create these first:
-
-- Node.js 22+
-- Sanity account (free tier works)
-- Cloudflare account (free tier works)
-- Resend account (free tier works)
-
-### 2. Download the Project
-
-Open a terminal and run:
-
-```bash
-git clone https://github.com/DeafGecko/venue-operations.git
-cd venue-operations
-npm install
-```
-
-### 3. Set Up Wrangler
-
-The real `wrangler.toml` file is not saved in Git because it holds settings for your machine. Copy the example file to make your own:
-
-```bash
-cp wrangler.toml.example wrangler.toml
-```
-
-Open `wrangler.toml` and replace the example values with your own Cloudflare and Sanity settings.
-
-### 4. Add Environment Variables
-
-Create a file named `.env` in the main project folder. Add your own values:
-
-```env
-SANITY_PROJECT_ID=your_project_id
-SANITY_DATASET=production
-SANITY_API_TOKEN=your_sanity_token
-SUPER_ADMIN_EMAIL=you@yourdomain.com
-ADMIN_PASSWORD=your_secure_password
-RESEND_API_KEY=re_your_resend_key
-FROM_EMAIL=noreply@yourdomain.com
-PUBLIC_BASE_URL=http://localhost:4321
-```
-
-Do not share this file or commit it to Git. It contains private keys and passwords.
-
-### 5. Run the Project
-
-Start the website:
-
-```bash
-npm run dev
-```
-
-To use Sanity Studio, open a second terminal and run:
-
-```bash
-npm run studio
-```
-
-Then open [http://localhost:4321/admin/login](http://localhost:4321/admin/login) in your browser.
-
-### 6. Deploy to Cloudflare
-
-Upload your private values one time:
-
-```bash
-npx wrangler secret put SANITY_API_TOKEN
-npx wrangler secret put SUPER_ADMIN_EMAIL
-npx wrangler secret put ADMIN_PASSWORD
-npx wrangler secret put RESEND_API_KEY
-```
-
-Build and deploy the project:
-
-```bash
-npm run build && npx wrangler deploy
-```
 
 ---
 

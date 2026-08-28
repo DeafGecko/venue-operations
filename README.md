@@ -1,24 +1,13 @@
 # Venue Operations
 
-[![Astro](https://img.shields.io/badge/Astro-4-FF5D01?logo=astro&logoColor=white)](https://astro.build)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Sanity](https://img.shields.io/badge/Sanity-v3-F03E2F?logo=sanity&logoColor=white)](https://sanity.io/)
-[![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-FF6F00?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-
 > A personal full-stack project built for fun and the challenge — a complete venue operations platform deployed on the edge.
 
-**Live:** [venue-operations-api.dwirog.workers.dev](https://venue-operations-api.dwirog.workers.dev)
 
 ## Demo Access
 
 For portfolio and review purposes:
 
-- **URL:** [Admin login](https://venue-operations-api.dwirog.workers.dev/admin/login)
-- **Email:** `demo@09labs.dev`
-- **Password:** `[demo password]`
-- **Role:** Viewer
+- **URL:** [Demo](https://venue-operations-api.dwirog.workers.dev/demo)
 
 ---
 

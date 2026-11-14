@@ -105,7 +105,67 @@ export default function CalendarGrid({ bookings }: Props) {
             setSelectedBooking(null);
       };
 
+      // ── Month totals and payment groups for the top cards and the right-hand panel ──
+      const sum = (list: Booking[], pick: (b: Booking) => number) => list.reduce((t, b) => t + (pick(b) || 0), 0);
+      const byDate = (a: Booking, b: Booking) => (a.eventDate < b.eventDate ? -1 : 1);
+      const paidList = monthBookings.filter(b => b.paymentStatus === 'paid').sort(byDate);
+      const partialList = monthBookings.filter(b => b.paymentStatus === 'partial').sort(byDate);
+      const unpaidList = monthBookings.filter(b => b.paymentStatus !== 'paid' && b.paymentStatus !== 'partial').sort(byDate);
+      const expectedRevenue = sum(monthBookings, b => b.totalPrice || 0);
+      const guestTotal = sum(monthBookings, b => b.guestCount || 0);
+      const paidShare = monthBookings.length ? Math.round((paidList.length / monthBookings.length) * 100) : 0;
+      const moneyFull = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+      const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+      const statCards = [
+            { label: 'Events', value: String(monthBookings.length), note: 'this month' },
+            { label: 'Expected revenue', value: moneyFull(expectedRevenue), note: 'booked this month' },
+            { label: 'Guests', value: guestTotal.toLocaleString('en-US'), note: 'expected this month' },
+            { label: 'Paid', value: `${paidShare}%`, note: `${paidList.length} of ${monthBookings.length} paid` },
+      ];
+
+      const PaymentGroup = ({ title, tone, list }: { title: string; tone: string; list: Booking[] }) => (
+            <div>
+                  <div className="flex items-center justify-between mb-2">
+                        <span className={`text-[0.72rem] font-semibold uppercase tracking-widest ${tone}`}>{title}</span>
+                        <span className="text-xs text-[var(--cal-muted)]">{list.length}</span>
+                  </div>
+                  {list.length === 0 ? (
+                        <p className="text-xs text-[var(--cal-muted)] py-2">None this month.</p>
+                  ) : (
+                        <ul className="space-y-1">
+                              {list.map((b) => (
+                                    <li key={b._id}>
+                                          <button type="button" onClick={() => openModal(b)}
+                                                className="w-full flex items-center justify-between gap-3 rounded-md px-2 py-2 text-left hover:bg-[var(--cal-hover)] transition">
+                                                <span className="min-w-0">
+                                                      <span className="block text-sm text-[var(--cal-text)] truncate">{b.clientName}</span>
+                                                      <span className="block text-xs text-[var(--cal-muted)]">{shortDate(b.eventDate)} · {b.accountNumber}</span>
+                                                </span>
+                                                <span className="shrink-0 text-xs font-semibold text-[var(--cal-text)]">{moneyFull(Math.max((b.totalPrice || 0) - (b.amountPaid || 0), 0))} due</span>
+                                          </button>
+                                    </li>
+                              ))}
+                        </ul>
+                  )}
+            </div>
+      );
+
       return (
+      <div className="space-y-6">
+        {/* Top cards: this month at a glance */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {statCards.map((c) => (
+            <div key={c.label} className="cal-root rounded-2xl border border-[var(--cal-line)] px-8 py-5 shadow-sm">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[var(--cal-muted)]">{c.label}</p>
+              <p className="mt-2 text-2xl font-semibold text-[var(--cal-text)] leading-tight">{c.value}</p>
+              <p className="mt-2 text-xs text-[var(--cal-muted)]">{c.note}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col xl:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full">
       <div className="cal-root rounded-lg border border-[var(--cal-line)] overflow-hidden">
       <style>{`
         :root {
@@ -423,6 +483,20 @@ export default function CalendarGrid({ bookings }: Props) {
       </div>
       </div>
       )}
+      </div>
+          </div>
+
+          {/* Right side: paid, partial, and unpaid bookings for the month */}
+          <aside aria-label="Payments this month" className="cal-root w-full xl:w-80 shrink-0 rounded-lg border border-[var(--cal-line)] p-6 space-y-6">
+            <div>
+              <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[var(--cal-muted)]">Payments this month</p>
+              <p className="mt-1 text-sm text-[var(--cal-muted)]">Tap a booking to open it</p>
+            </div>
+            <PaymentGroup title="Paid" tone="text-emerald-600" list={paidList} />
+            <PaymentGroup title="Partial" tone="text-amber-600" list={partialList} />
+            <PaymentGroup title="Unpaid" tone="text-red-600" list={unpaidList} />
+          </aside>
+        </div>
       </div>
 );
 }

@@ -157,11 +157,11 @@ const stats = [
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
     {stats.map(({ label, value, icon: Icon, href, tone, delta, deltaTone, note }) => {
       return (
-        <a href={href} aria-label={`${label}: ${value}. Open`} class="bg-white rounded-2xl px-10 py-7 shadow-sm hover:shadow-md transition">
+        <a href={href} aria-label={`${label}: ${value}. Open`} class="bg-white rounded-2xl px-8 py-5 shadow-sm hover:shadow-md transition">
           <div class="flex items-start justify-between">
             <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">{label}</p>
           </div>
-          <p class="mt-4 text-3xl font-semibold text-[#111827] leading-tight">{value}</p>
+          <p class="mt-2 text-2xl font-semibold text-[#111827] leading-tight">{value}</p>
           <p class="mt-2 text-xs text-[#6b7280]">
             {delta && <span class={`font-semibold ${deltaTone}`}>{delta}</span>}
             {delta && ' '}

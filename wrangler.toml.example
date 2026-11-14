@@ -14,5 +14,5 @@ database_id = "23e71458-17d2-491a-b725-ee2075043ab5"
 [vars]
 SANITY_PROJECT_ID = "mzqx3hwz"
 SANITY_DATASET = "production"
-PUBLIC_BASE_URL = "https://venue-operations-api.workers.dev"
+PUBLIC_BASE_URL = "https://venue-operations-api.dwirog.workers.dev"
 FROM_EMAIL = "dwirog@gmail.com"

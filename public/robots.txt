@@ -3,4 +3,4 @@ Allow: /book
 Disallow: /admin
 Disallow: /api/admin
 
-Sitemap: https://venue-operations-api.workers.dev/sitemap.xml
+Sitemap: https://venue-operations-api.dwirog.workers.dev/sitemap.xml

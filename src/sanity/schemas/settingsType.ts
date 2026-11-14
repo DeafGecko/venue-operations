@@ -83,6 +83,8 @@ export const settingsType = defineType({
       }),
       
 // ── Contact ──
+      defineField({ name: 'companyName', type: 'string', title: 'Company Legal Name' }),
+      defineField({ name: 'taxId', type: 'string', title: 'Tax ID' }),
       defineField({ name: 'contactEmail', type: 'string', title: 'Contact Email' 
 
       }),

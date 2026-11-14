@@ -2,6 +2,7 @@
 // React edit form for updating booking details
 
 import { useState, useEffect } from 'react';
+import { formatMoney } from '../../lib/money';
 import { CheckCircle, XCircle } from 'lucide-react';
 import CustomSelect from './CustomSelect';
 
@@ -365,7 +366,7 @@ return (
                   <div>
                         <label className="block text-sm font-medium text-[#111827]">Balance</label>
                         <p className={`mt-1 text-lg font-medium ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                              ${balance.toFixed(2)}
+                              ${formatMoney(balance)}
                         </p>
                   </div>
             </div>
@@ -376,6 +377,7 @@ return (
                         Payment Status
                   </label>
                   <CustomSelect
+                        centered
                         value={formData.paymentStatus}
                         onChange={v => setFormData(p => ({ ...p, paymentStatus: v }))}
                         options={[

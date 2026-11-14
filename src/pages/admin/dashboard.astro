@@ -1,13 +1,18 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import DashboardCharts from "../../components/admin/DashboardCharts";
-import { DollarSign, CalendarDays, CalendarCheck, Users } from "lucide-react";
+import { MonthRevenueCard, EventTypeCard } from "../../components/admin/DashboardCharts";
+import NewBookingButton from "../../components/admin/NewBookingButton";
+import { DollarSign, CalendarDays, CalendarCheck, Users, AlertCircle, CheckCircle2, TrendingUp, MapPin, Clock } from "lucide-react";
 import { sanityClient } from "../../lib/sanity";
 
 const bookings = await sanityClient.fetch(`
   *[_type == "booking"] | order(eventDate asc) {
-    _id, accountNumber, clientName, eventDate, eventType,
-    paymentStatus, amountPaid, totalPrice, createdAt
+        "clientName": coalesce(*[_id == ^.clientId][0].name, clientName),
+    "email": coalesce(*[_id == ^.clientId][0].email, email),
+    "phone": coalesce(*[_id == ^.clientId][0].phone, phone),
+    clientId,
+_id, accountNumber, eventDate, eventType,
+    paymentStatus, amountPaid, totalPrice, createdAt, startTime, endTime
   }
 `);
 
@@ -22,9 +27,25 @@ const totalClients    = new Set(bookings.map((b: any) => b.clientName)).size;
 
 const recentBookings  = [...bookings].sort((a: any, b: any) => new Date(b.createdAt ?? b.eventDate).getTime() - new Date(a.createdAt ?? a.eventDate).getTime()).slice(0, 6);
 const todayEvents     = bookings.filter((b: any) => b.eventDate?.slice(0, 10) === todayStr);
+// Next confirmed events, and bookings with a balance still owed (the action queue).
+const upcomingBookings = bookings.filter((b: any) => (b.eventDate?.slice(0, 10) ?? '') >= todayStr).slice(0, 4);
+const actionQueue = bookings.filter((b: any) => b.paymentStatus !== 'paid').slice(0, 5);
+const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const tomorrowStr = addDays(today, 1).toISOString().slice(0, 10);
+const weekStartStr = addDays(today, -today.getDay()).toISOString().slice(0, 10);
+const weekEndStr = addDays(today, 6 - today.getDay()).toISOString().slice(0, 10);
+const tomorrowEvents = bookings.filter((b: any) => b.eventDate?.slice(0, 10) === tomorrowStr);
+const weekEvents = bookings.filter((b: any) => { const d = b.eventDate?.slice(0, 10); return !!d && d >= weekStartStr && d <= weekEndStr; });
+
+// Details the dialog needs for one booking (attached to each client name on the dashboard).
+const detail = (b: any) => ({
+  _id: b._id, clientName: b.clientName, accountNumber: b.accountNumber, eventDate: b.eventDate,
+  eventType: b.eventType, startTime: b.startTime, endTime: b.endTime, email: b.email, phone: b.phone,
+  totalPrice: b.totalPrice || 0, amountPaid: b.amountPaid || 0, paymentStatus: b.paymentStatus || 'unpaid',
+});
 
 // Monthly revenue (last 6 months)
-const monthly: { month: string; revenue: number }[] = [];
+const monthly: { month: string; key: string; revenue: number }[] = [];
 for (let i = 5; i >= 0; i--) {
   const d = new Date();
   d.setMonth(d.getMonth() - i);
@@ -33,7 +54,7 @@ for (let i = 5; i >= 0; i--) {
   const revenue = bookings
     .filter((b: any) => b.eventDate?.startsWith(key))
     .reduce((sum: number, b: any) => sum + (b.amountPaid || 0), 0);
-  monthly.push({ month: label, revenue });
+  monthly.push({ month: label, key, revenue });
 }
 
 const statusCounts = {
@@ -64,96 +85,414 @@ for (const b of bookings) {
   const key = normalize(b.eventType);
   revenueByType[key] = (revenueByType[key] || 0) + (b.amountPaid || 0);
 }
+// Per-booking rows for the event-type card, so it can be filtered by month.
+const typeRows = bookings.map((b: any) => ({
+  label: normalize(b.eventType),
+  amount: b.amountPaid || 0,
+  month: (b.eventDate || '').slice(0, 7),
+}));
 const revenueSlices = Object.entries(revenueByType)
   .map(([label, value]) => ({ label, value }))
   .sort((a, b) => b.value - a.value);
 
+// ── Top stat cards: each has a real comparison line under the number ──
+const curMonth = todayStr.slice(0, 7);
+const prevDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+const paidIn = (m: string) => bookings
+  .filter((b: any) => (b.eventDate ?? '').slice(0, 7) === m)
+  .reduce((sum: number, b: any) => sum + (b.amountPaid || 0), 0);
+const revThis = paidIn(curMonth);
+const revPrev = paidIn(prevMonth);
+const revChange = revPrev > 0 ? Math.round(((revThis - revPrev) / revPrev) * 1000) / 10 : null;
+const newThisMonth = bookings.filter((b: any) => (b.createdAt ?? '').slice(0, 7) === curMonth).length;
+const weekAhead = addDays(today, 7).toISOString().slice(0, 10);
+const upcomingWeek = bookings.filter((b: any) => {
+  const d = (b.eventDate ?? '').slice(0, 10);
+  return !!d && d >= todayStr && d <= weekAhead;
+}).length;
+const clientsWithBookings = new Set(bookings.map((b: any) => b.clientId).filter(Boolean)).size;
+
+const toneBox = {
+        emerald: 'bg-emerald-50 text-emerald-600',
+        blue: 'bg-blue-50 text-blue-600',
+        violet: 'bg-violet-50 text-violet-600',
+        amber: 'bg-amber-50 text-amber-600',
+};
+
 const stats = [
-  { label: 'Revenue',  value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign  },
-  { label: 'Bookings', value: totalBookings,                        icon: CalendarDays },
-  { label: 'Upcoming', value: upcoming,                             icon: CalendarCheck },
-  { label: 'Clients',  value: totalClients,                         icon: Users        },
+  {
+    label: 'Revenue', value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, href: '/admin/bills?from=dashboard',
+    tone: 'emerald',
+    note: revChange === null ? 'no last-month data' : `vs. last month`,
+    delta: revChange === null ? '' : `${revChange >= 0 ? '+' : ''}${revChange}%`,
+    deltaTone: revChange === null || revChange >= 0 ? 'text-emerald-600' : 'text-red-600',
+  },
+  {
+    label: 'Bookings', value: totalBookings, icon: CalendarDays, href: '/admin/?from=dashboard',
+    tone: 'blue',
+    delta: `+${newThisMonth}`, deltaTone: 'text-emerald-600', note: 'new this month',
+  },
+  {
+    label: 'Upcoming', value: upcoming, icon: CalendarCheck, href: '/admin/calendar?from=dashboard',
+    tone: 'violet',
+    delta: `${upcomingWeek}`, deltaTone: 'text-emerald-600', note: 'in the next 7 days',
+  },
+  {
+    label: 'Clients', value: totalClients, icon: Users, href: '/admin/clients?from=dashboard',
+    tone: 'amber',
+    delta: `${clientsWithBookings}`, deltaTone: 'text-emerald-600', note: 'with a booking',
+  },
 ];
 ---
 
 <AdminLayout title="Dashboard">
 
+  <!-- ── Top action row ── -->
+  <div class="flex justify-end mb-6">
+    <NewBookingButton client:load />
+  </div>
+
   <!-- ── 4 Stat Cards ── -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-    {stats.map(({ label, value, icon: Icon }) => (
-      <div class="bg-white border border-[#e5e7eb] rounded-xl p-4 shadow-sm flex items-center gap-3">
-        <div class="p-2 rounded-lg bg-[#f3f4f6] shrink-0">
-          <Icon className="w-4 h-4 text-[#6b7280]" />
-        </div>
-        <div class="min-w-0">
-          <p class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">{label}</p>
-          <p class="text-xl font-light text-[#111827] leading-tight">{value}</p>
-        </div>
-      </div>
-    ))}
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    {stats.map(({ label, value, icon: Icon, href, tone, delta, deltaTone, note }) => {
+      return (
+        <a href={href} aria-label={`${label}: ${value}. Open`} class="bg-white rounded-2xl px-10 py-7 shadow-sm hover:shadow-md transition">
+          <div class="flex items-start justify-between">
+            <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">{label}</p>
+          </div>
+          <p class="mt-4 text-3xl font-semibold text-[#111827] leading-tight">{value}</p>
+          <p class="mt-2 text-xs text-[#6b7280]">
+            {delta && <span class={`font-semibold ${deltaTone}`}>{delta}</span>}
+            {delta && ' '}
+            {note}
+          </p>
+        </a>
+      );
+    })}
   </div>
 
-  <!-- ── Row 1: Bar chart + Pie chart ── -->
-  <DashboardCharts monthly={monthly} statusCounts={statusCounts} revenueSlices={revenueSlices} client:load />
+  <!-- ── Row 2: Revenue by Month · Revenue by Event Type · Action Queue ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <MonthRevenueCard client:load monthly={monthly} />
+    <EventTypeCard client:load typeRows={typeRows} />
 
-  <!-- ── Row 2: Recent Bookings + Today's Events ── -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-    <!-- Recent Bookings -->
-    <div class="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
-      <div class="px-4 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border)">
-        <p class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Recent Bookings</p>
-        <a href="/admin" class="text-[0.65rem] text-[#6b7280] hover:text-[#111827] transition">View all →</a>
+    <!-- Action Queue: priority exceptions (balances still to collect) -->
+    <div class="h-full bg-white border border-[#e5e7eb] rounded-2xl shadow-sm overflow-hidden flex flex-col">
+      <div class="p-10 flex items-start justify-between gap-3">
+        <div>
+          <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Action Queue</p>
+          <p class="mt-1 text-sm text-[#6b7280]">Priority exceptions</p>
+        </div>
       </div>
-      <ul>
-        {recentBookings.length === 0 ? (
-          <li class="py-8 text-center text-xs text-[#9ca3af]">No bookings yet.</li>
-        ) : recentBookings.map((b: any) => (
-          <li class="flex items-center justify-between px-4 py-2.5 hover:bg-[#fafafa] transition" style="border-bottom: 1px solid var(--admin-border)">
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-[#111827] truncate">{b.clientName}</p>
-              <p class="text-[0.65rem] text-[#9ca3af]">{b.accountNumber} · {b.eventDate ? new Date(b.eventDate).toLocaleDateString() : '—'}</p>
-            </div>
-            <span class={`ml-3 shrink-0 inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${
-              b.paymentStatus === 'paid'    ? 'bg-emerald-500 text-white' :
-              b.paymentStatus === 'partial' ? 'bg-amber-500 text-white' :
-                                             'bg-red-500 text-white'
-            }`}>
-              {b.paymentStatus || 'unpaid'}
-            </span>
+      <ul class="flex-1">
+        {actionQueue.length === 0 ? (
+          <li class="px-10 py-10 text-center text-xs text-[#6b7280]">Nothing waiting for payment.</li>
+        ) : actionQueue.map((b: any) => (
+          <li class="flex items-center gap-3 px-10 py-4 hover:bg-[#fafafa] transition border-t border-[#f0f1f3]">
+            <span class={`w-2 h-2 rounded-full shrink-0 ${b.paymentStatus === 'partial' ? 'bg-amber-500' : 'bg-red-500'}`} aria-hidden="true" />
+            <button type="button" data-open-booking={JSON.stringify(detail(b))} class="min-w-0 flex-1 text-left rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#374151]">
+              <p class="text-sm font-semibold text-[#111827] truncate">{b.clientName}</p>
+              <p class="text-xs text-[#6b7280] truncate">{b.eventType || 'Event'} · {b.accountNumber}</p>
+            </button>
+            <span class="shrink-0 text-xs font-medium text-[#6b7280]">{b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}</span>
           </li>
         ))}
       </ul>
+      <div class="px-10 py-4 bg-[#f7f8fa] border-t border-[#e5e7eb] flex items-center gap-2 text-xs text-[#374151]">
+        <CheckCircle2 className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+        {actionQueue.length} balance{actionQueue.length === 1 ? '' : 's'} to collect
+      </div>
     </div>
+  </div>
 
-    <!-- Today's Events -->
-    <div class="bg-white border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
-      <div class="px-4 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border)">
-        <p class="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Today's Events</p>
-        <p class="text-[0.65rem] text-[#9ca3af]">{today.toLocaleDateString('default', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+  <!-- ── Row 3: Upcoming · Today at the venue ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Upcoming: next events, with how much is paid -->
+    <div class="bg-white border border-[#e5e7eb] rounded-2xl shadow-sm overflow-hidden">
+      <div class="p-10 flex items-start justify-between">
+        <div>
+          <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Upcoming</p>
+          <p class="mt-1 text-sm text-[#6b7280]">Next four events across the venue</p>
+        </div>
       </div>
       <ul>
-        {todayEvents.length === 0 ? (
-          <li class="py-8 text-center text-xs text-[#9ca3af]">No events scheduled for today.</li>
-        ) : todayEvents.map((b: any) => (
-          <li class="flex items-center gap-3 px-4 py-2.5 hover:bg-[#fafafa] transition" style="border-bottom: 1px solid var(--admin-border)">
-            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-[#111827] truncate">{b.clientName}</p>
-              <p class="text-[0.65rem] text-[#9ca3af] truncate">{b.eventType || 'Event'} · {b.accountNumber}</p>
-            </div>
-            <span class={`ml-auto shrink-0 inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${
-              b.paymentStatus === 'paid'    ? 'bg-emerald-500 text-white' :
-              b.paymentStatus === 'partial' ? 'bg-amber-500 text-white' :
-                                             'bg-red-500 text-white'
-            }`}>
-              {b.paymentStatus || 'unpaid'}
-            </span>
-          </li>
-        ))}
+        {upcomingBookings.length === 0 ? (
+          <li class="px-10 py-10 text-center text-xs text-[#6b7280]">No upcoming events.</li>
+        ) : upcomingBookings.map((b: any) => {
+          const paidPct = b.totalPrice > 0 ? Math.min(100, Math.round(((b.amountPaid || 0) / b.totalPrice) * 100)) : 0;
+          const barColor = paidPct >= 80 ? '#16a34a' : paidPct >= 50 ? '#f59e0b' : '#e11d48';
+          return (
+            <li class="px-10 py-6 border-t border-[#f0f1f3] hover:bg-[#fafafa] transition flex items-center gap-4">
+              <button type="button" data-open-booking={JSON.stringify(detail(b))} class="min-w-0 flex-1 text-left rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#374151]">
+                <p class="text-sm font-semibold text-[#111827] truncate">
+                  {b.clientName}
+                  <span class="ml-2 text-xs font-normal text-[#6b7280]">{b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}</span>
+                </p>
+                <p class="mt-0.5 flex items-center gap-1.5 text-xs text-[#6b7280] truncate">
+                  <MapPin className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                  {b.eventType || 'Event'}{b.guestCount ? ` · ${b.guestCount} guests` : ''}
+                </p>
+              </button>
+              <div class="shrink-0 w-28 text-right">
+                <div class="flex items-center justify-between text-[0.7rem] text-[#6b7280]">
+                  <span>Paid</span>
+                  <span class="font-semibold" style={`color:${barColor}`}>{paidPct}%</span>
+                </div>
+                <div class="mt-1.5 h-1.5 w-full rounded-full bg-[#eef0f3] overflow-hidden">
+                  <div class="h-full rounded-full" style={`width:${paidPct}%;background:${barColor}`} />
+                </div>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
 
+    <!-- Today at the venue: live run sheet for the selected range -->
+    <div class="bg-[#111827] text-white rounded-2xl shadow-sm overflow-hidden">
+      <div class="p-10 flex items-start justify-between gap-3">
+        <div>
+          <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Today at the venue</p>
+          <p class="mt-1 text-sm text-[#d1d5db]">Live run sheet</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="sr-only" for="events-range">Show events for</label>
+          <select id="events-range" class="h-7 rounded-md border border-white/15 bg-[#1f2937] px-2 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+            <option value="week">This week</option>
+          </select>
+        </div>
+      </div>
+      {['today', 'tomorrow', 'week'].map((key) => {
+        const list = key === 'today' ? todayEvents : key === 'tomorrow' ? tomorrowEvents : weekEvents;
+        const featured = list[0];
+        const paidPct = featured && featured.totalPrice > 0 ? Math.min(100, Math.round(((featured.amountPaid || 0) / featured.totalPrice) * 100)) : 0;
+        return (
+          <div data-range={key} hidden={key !== 'today'} class="px-10 pb-10">
+            {!featured ? (
+              <p class="py-10 text-center text-xs text-[#9ca3af]">{key === 'today' ? 'No events today.' : key === 'tomorrow' ? 'No events tomorrow.' : 'No events this week.'}</p>
+            ) : (
+              <>
+                <div class="flex items-start justify-between gap-3 pt-2">
+                  <div class="min-w-0">
+                    <button type="button" data-open-booking={JSON.stringify(detail(featured))} class="text-left text-xl font-semibold text-white truncate rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white">{featured.clientName}</button>
+                    <p class="mt-0.5 text-sm text-[#9ca3af] truncate">{featured.eventType || 'Event'} · {featured.accountNumber}</p>
+                  </div>
+                  <span class="shrink-0 rounded-md bg-white/10 px-2.5 py-1 text-xs font-semibold">{paidPct}% paid</span>
+                </div>
+                <div class="mt-5 grid grid-cols-3 gap-3 text-sm text-[#d1d5db]">
+                  <span class="flex items-center gap-1.5"><Clock className="w-4 h-4" aria-hidden="true" />{featured.startTime || '—'}</span>
+                  <span class="flex items-center gap-1.5"><MapPin className="w-4 h-4" aria-hidden="true" />{featured.assignedSpace || '—'}</span>
+                  <span class="flex items-center gap-1.5 justify-end">{featured.guestCount ? `${featured.guestCount} guests` : '—'}</span>
+                </div>
+                <div class="mt-4 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+                  <div class="h-full rounded-full bg-gradient-to-r from-sky-400 to-emerald-400" style={`width:${paidPct}%`} />
+                </div>
+                <div class="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-sm">
+                  <span class="text-[#9ca3af]">Contact</span>
+                  <span class="text-white">{featured.phone || '—'}</span>
+                </div>
+                {list.length > 1 && (
+                  <ul class="mt-4 space-y-1">
+                    {list.slice(1, 4).map((b: any) => (
+                      <li>
+                        <button type="button" data-open-booking={JSON.stringify(detail(b))} class="w-full flex items-center justify-between rounded-md px-2 py-1.5 text-left text-sm text-[#d1d5db] hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                          <span class="truncate">{b.clientName}</span>
+                          <span class="text-xs text-[#9ca3af]">{b.startTime || ''}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
+          </div>
+        );
+      })}
+    </div>
   </div>
 
+  <!-- ── Row 4: Booking pipeline ── -->
+  <div class="bg-white border border-[#e5e7eb] rounded-2xl shadow-sm overflow-hidden mb-6">
+    <div class="p-10 flex items-start justify-between gap-3">
+      <div>
+        <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Booking Pipeline</p>
+        <p class="mt-1 text-sm text-[#6b7280]">Latest confirmed and pending business</p>
+      </div>
+      <a href="/admin/?from=dashboard" class="text-xs text-[#6b7280] hover:text-[#111827] transition">View all →</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-[#f7f8fa] text-left text-[0.65rem] font-semibold uppercase tracking-widest text-[#9ca3af]">
+            <th scope="col" class="px-5 py-2.5 font-semibold">Booking</th>
+            <th scope="col" class="px-5 py-2.5 font-semibold">Event</th>
+            <th scope="col" class="px-5 py-2.5 font-semibold">Date</th>
+            <th scope="col" class="px-5 py-2.5 font-semibold">Value</th>
+            <th scope="col" class="px-5 py-2.5 font-semibold">Payment</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recentBookings.length === 0 ? (
+            <tr><td colspan="5" class="py-8 text-center text-xs text-[#6b7280]">No bookings yet.</td></tr>
+          ) : recentBookings.map((b: any) => {
+            const st = b.paymentStatus || 'unpaid';
+            const pill = st === 'paid' ? 'bg-emerald-50 text-emerald-700' : st === 'partial' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600';
+            return (
+              <tr class="hover:bg-[#fafafa] transition border-t border-[#f0f1f3]">
+                <td class="px-5 py-4">
+                  <button type="button" data-open-booking={JSON.stringify(detail(b))} class="text-left rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#374151]">
+                    <span class="block font-semibold text-[#111827]">{b.clientName}</span>
+                    <span class="block text-xs text-[#9ca3af]">{b.accountNumber}</span>
+                  </button>
+                </td>
+                <td class="px-5 py-4 text-[#4b5563]">{b.eventType ? b.eventType.charAt(0).toUpperCase() + b.eventType.slice(1) : 'Event'}</td>
+                <td class="px-5 py-4 text-[#4b5563]">{b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
+                <td class="px-5 py-4 font-semibold text-[#111827]">${Number(b.totalPrice || 0).toLocaleString()}</td>
+                <td class="px-5 py-4">
+                  <span class={`inline-flex justify-center min-w-16 rounded-md px-2 py-0.5 text-xs font-semibold ${pill}`}>{st.charAt(0).toUpperCase() + st.slice(1)}</span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Booking detail dialog: opened from a client name in Recent Bookings or Today's Events -->
+  <div id="booking-dialog" hidden class="fixed inset-0 z-[9000] flex justify-end bg-black/40 opacity-0 transition-opacity duration-300" role="presentation">
+    <div id="bd-panel" role="dialog" aria-modal="true" aria-labelledby="bd-title" class="h-full w-full max-w-md overflow-y-auto bg-white p-6 shadow-2xl transition-transform duration-300 ease-out translate-x-full">
+      <div class="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <h2 id="bd-title" class="text-lg font-normal text-[#111827]"></h2>
+          <p id="bd-account" class="text-sm text-[#6b7280]"></p>
+        </div>
+        <button type="button" id="bd-close" aria-label="Close" class="rounded-md p-1 hover:bg-[#f3f4f6]">✕</button>
+      </div>
+      <dl class="space-y-2 text-sm">
+        <div class="flex justify-between"><dt class="text-[#6b7280]">Date</dt><dd id="bd-date" class="text-[#111827]"></dd></div>
+        <div class="flex justify-between"><dt class="text-[#6b7280]">Time</dt><dd id="bd-time" class="text-[#111827]"></dd></div>
+        <div class="flex justify-between"><dt class="text-[#6b7280]">Type</dt><dd id="bd-type" class="text-[#111827]"></dd></div>
+        <div class="flex justify-between"><dt class="text-[#6b7280]">Phone</dt><dd><a id="bd-phone" class="text-[#1a73e8] hover:underline"></a></dd></div>
+        <div class="flex justify-between"><dt class="text-[#6b7280]">Email</dt><dd><a id="bd-email" class="text-[#1a73e8] hover:underline break-all"></a></dd></div>
+        <div class="flex justify-between"><dt class="text-[#6b7280]">Total</dt><dd id="bd-total" class="text-[#111827]"></dd></div>
+        <div class="flex justify-between"><dt class="text-[#6b7280]">Paid</dt><dd id="bd-paid" class="text-[#111827]"></dd></div>
+        <div class="flex justify-between font-medium"><dt class="text-[#6b7280]">Balance due</dt><dd id="bd-balance"></dd></div>
+      </dl>
+
+      <div class="mt-5 border-t border-[#e5e7eb] pt-4">
+        <label for="bd-status" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Payment status</label>
+        <div class="flex gap-2">
+          <select id="bd-status" class="h-9 flex-1 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm">
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partial</option>
+            <option value="paid">Paid</option>
+          </select>
+          <button type="button" id="bd-save" class="h-9 rounded-md bg-[#111827] px-4 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50">Save status</button>
+        </div>
+        <p id="bd-msg" role="status" class="mt-2 min-h-[1.25rem] text-xs text-[#6b7280]"></p>
+      </div>
+
+      <div class="mt-4 flex justify-between gap-3">
+        <a id="bd-open" href="#" class="inline-flex items-center gap-1 rounded-md bg-[#1a73e8] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#1765cc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8] focus-visible:ring-offset-2">Open full booking <span aria-hidden="true">→</span></a>
+        <button type="button" id="bd-close2" class="rounded-md border border-[#e5e7eb] px-3 py-1.5 text-sm hover:bg-[#f9fafb]">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    (() => {
+      // Events card: show the list picked in the dropdown.
+      const rangeSelect = document.getElementById("events-range");
+      rangeSelect?.addEventListener("change", () => {
+        document.querySelectorAll("[data-range]").forEach((ul) => {
+          ul.hidden = ul.getAttribute("data-range") !== rangeSelect.value;
+        });
+      });
+
+      const dialog = document.getElementById("booking-dialog");
+      const $ = (id) => document.getElementById(id);
+      const money = (n) => "$" + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      let current = null;
+
+      const panel = document.getElementById("bd-panel");
+      // Slide in from the right edge, and slide back out before hiding.
+      const openPanel = () => {
+        dialog.hidden = false;
+        requestAnimationFrame(() => {
+          dialog.style.opacity = "1";
+          panel.classList.remove("translate-x-full");
+          panel.classList.add("translate-x-0");
+        });
+      };
+      const close = () => {
+        if (dialog.hidden) return;
+        dialog.style.opacity = "0";
+        panel.classList.remove("translate-x-0");
+        panel.classList.add("translate-x-full");
+        current = null;
+        setTimeout(() => { dialog.hidden = true; }, 300);
+      };
+
+      document.querySelectorAll("[data-open-booking]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const b = JSON.parse(btn.getAttribute("data-open-booking"));
+          current = b;
+          const d = new Date(b.eventDate);
+          $("bd-title").textContent = b.clientName;
+          $("bd-account").textContent = b.accountNumber;
+          $("bd-date").textContent = isNaN(d) ? "—" : d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+          $("bd-time").textContent = b.startTime && b.endTime ? `${b.startTime} – ${b.endTime}` : "—";
+          $("bd-type").textContent = b.eventType || "Event";
+          $("bd-phone").textContent = b.phone || "Not on file";
+          $("bd-phone").href = b.phone ? `tel:${b.phone}` : "#";
+          $("bd-email").textContent = b.email || "Not on file";
+          $("bd-email").href = b.email ? `mailto:${b.email}` : "#";
+          $("bd-total").textContent = money(b.totalPrice);
+          $("bd-paid").textContent = money(b.amountPaid);
+          const balance = Math.max((b.totalPrice || 0) - (b.amountPaid || 0), 0);
+          $("bd-balance").textContent = money(balance);
+          $("bd-balance").className = balance > 0 ? "text-red-600" : "text-emerald-600";
+          $("bd-status").value = b.paymentStatus;
+          $("bd-msg").textContent = "";
+          $("bd-open").href = `/admin/edit/${b._id}?from=dashboard`;
+          openPanel();
+          $("bd-close").focus();
+        });
+      });
+
+      $("bd-save").addEventListener("click", async () => {
+        if (!current) return;
+        const status = $("bd-status").value;
+        // Paid means the whole total; unpaid means nothing; partial keeps what was paid, capped at the total.
+        const amountPaid = status === "paid" ? current.totalPrice
+          : status === "unpaid" ? 0
+          : Math.min(current.amountPaid || 0, current.totalPrice || 0);
+        const save = $("bd-save");
+        save.disabled = true; $("bd-msg").textContent = "Saving…";
+        try {
+          const res = await fetch(`/api/admin/bookings/${current._id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentStatus: status, amountPaid }),
+          });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Could not save the status.");
+          $("bd-msg").textContent = "Saved.";
+          setTimeout(() => location.reload(), 400);
+        } catch (err) {
+          $("bd-msg").textContent = err.message;
+        } finally {
+          save.disabled = false;
+        }
+      });
+
+      $("bd-close").addEventListener("click", close);
+      $("bd-close2").addEventListener("click", close);
+      dialog.addEventListener("click", (e) => { if (e.target === dialog) close(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !dialog.hidden) close(); });
+    })();
+  </script>
 </AdminLayout>

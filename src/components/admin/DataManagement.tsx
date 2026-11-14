@@ -213,7 +213,7 @@ export default function DataManagement() {
       <SectionCard>
         <CardTitle icon={Database}>Migration Log</CardTitle>
         {log.length === 0 ? (
-          <p className="text-xs text-[#9ca3af]">No activity yet. Import or export data to see a log here.</p>
+          <p className="text-xs text-[#6b7280]">No activity yet. Import or export data to see a log here.</p>
         ) : (
           <ul className="divide-y divide-[#e5e7eb]">
             {log.map((entry) => (
@@ -222,7 +222,7 @@ export default function DataManagement() {
                   <span className={`text-xs font-semibold uppercase ${actionColor[entry.action]}`}>{actionLabel[entry.action]}</span>
                   <span className="text-[#374151]">{entry.detail}</span>
                 </div>
-                <span className="text-xs text-[#9ca3af] shrink-0 ml-4">{new Date(entry.date).toLocaleString()}</span>
+                <span className="text-xs text-[#6b7280] shrink-0 ml-4">{new Date(entry.date).toLocaleString()}</span>
               </li>
             ))}
           </ul>

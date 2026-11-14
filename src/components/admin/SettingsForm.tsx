@@ -121,7 +121,7 @@ function LogoCropModal({
       <div className="bg-white rounded-xl shadow-2xl p-5 w-100 flex flex-col gap-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-[#111827]">Crop Logo</p>
-          <button type="button" onClick={onCancel} className="text-[#9ca3af] hover:text-[#374151] text-lg leading-none">&times;</button>
+          <button type="button" onClick={onCancel} className="text-[#6b7280] hover:text-[#374151] text-lg leading-none">&times;</button>
         </div>
 
 {/* Shape picker */}
@@ -160,7 +160,7 @@ function LogoCropModal({
 
 {/* Zoom slider */}
         <div className="flex items-center gap-2">
-          <ZoomOut className="w-3.5 h-3.5 text-[#9ca3af] shrink-0" />
+          <ZoomOut className="w-3.5 h-3.5 text-[#6b7280] shrink-0" />
           <input
             type="range" min={0.2} max={5} step={0.01}
             value={zoom}
@@ -169,9 +169,9 @@ function LogoCropModal({
             onChange={e => setZoom(Number(e.target.value))}
             className="flex-1 accent-[#374151] h-1.5"
           />
-          <ZoomIn className="w-3.5 h-3.5 text-[#9ca3af] shrink-0" />
+          <ZoomIn className="w-3.5 h-3.5 text-[#6b7280] shrink-0" />
         </div>
-        <p className="text-[0.6rem] text-center text-[#9ca3af] -mt-2">Drag to reposition · Scroll or slide to zoom</p>
+        <p className="text-[0.72rem] text-center text-[#6b7280] -mt-2">Drag to reposition · Scroll or slide to zoom</p>
 
 {/* Actions */}
         <div className="flex gap-2 pt-1">
@@ -187,8 +187,10 @@ function LogoCropModal({
 interface Settings {
   _id?: string;
   venueName: string;
+  companyName: string;
+  taxId: string;
   tagline: string;
-  logo?: { asset?: { _ref?: string; url?: string } };
+  logo?: { asset?: { _id?: string; url?: string } } | null;
   logoShape?: CropShape;
   primaryColor: string;
   secondaryColor: string;
@@ -220,7 +222,7 @@ const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
 
 // Section title component
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-[0.65rem] font-semibold uppercase tracking-widest text-[#9ca3af] mb-2 mt-5 first:mt-0">{children}</p>
+  <p className="text-xs font-semibold uppercase tracking-widest text-[#6b7280] mb-2 mt-5 first:mt-0">{children}</p>
 );
 
 // Font options for the font selector dropdown
@@ -300,19 +302,40 @@ export default function SettingsForm() {
     if (file && file.type.startsWith('image/')) openCropFor(file);
   };
 
-// Handle confirmation of the cropped logo
-  const handleCropConfirm = (dataUrl: string, shape: CropShape) => {
-    setSettings(prev => ({ ...prev!, logo: { asset: { url: dataUrl } }, logoShape: shape }));
-    setCropSrc(null);
+// Upload an image blob to the Sanity asset store and return its asset id and CDN url
+  const uploadImage = async (blob: Blob, filename: string) => {
+    const res = await fetch(`/api/admin/uploads?filename=${encodeURIComponent(filename)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': blob.type || 'image/png' },
+      body: blob,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    return data as { assetId: string; url: string };
   };
 
-// Handle avatar file selection and update the admin avatar setting
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+// Handle confirmation of the cropped logo: upload it, then keep the asset reference
+  const handleCropConfirm = async (dataUrl: string, shape: CropShape) => {
+    setCropSrc(null);
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const { assetId, url } = await uploadImage(blob, 'logo.png');
+      setSettings(prev => ({ ...prev!, logo: { asset: { _id: assetId, url } }, logoShape: shape }));
+    } catch (err: any) {
+      setError(err.message || 'Logo upload failed');
+    }
+  };
+
+// Handle avatar file selection: upload it and store the CDN url
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setSettings((prev) => ({ ...prev!, adminAvatar: reader.result as string }));
-    reader.readAsDataURL(file);
+    try {
+      const { url } = await uploadImage(file, file.name);
+      setSettings((prev) => ({ ...prev!, adminAvatar: url }));
+    } catch (err: any) {
+      setError(err.message || 'Avatar upload failed');
+    }
   };
 
 // Handle form submission and save settings
@@ -375,6 +398,19 @@ export default function SettingsForm() {
         </div>
       )}
 
+{/* ── Company ── */}
+      <SectionTitle>Company</SectionTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="companyName">Company Legal Name</Label>
+          <Input id="companyName" name="companyName" value={settings.companyName || ''} onChange={handleChange} placeholder="e.g. The Factory LLC" />
+        </div>
+        <div>
+          <Label htmlFor="taxId">Tax ID</Label>
+          <Input id="taxId" name="taxId" value={settings.taxId || ''} onChange={handleChange} placeholder="e.g. 12-3456789" />
+        </div>
+      </div>
+
 {/* ── Branding ── */}
       <SectionTitle>Branding</SectionTitle>
 
@@ -395,7 +431,7 @@ export default function SettingsForm() {
         <div>
           <Label>Logo</Label>
           <label
-            className={`flex flex-col items-center justify-center gap-2 w-full h-full min-h-22 border-2 border-dashed rounded-lg cursor-pointer transition text-xs text-[#9ca3af] hover:bg-[#f9fafb] ${dragOver ? 'border-[#374151] bg-[#f9fafb]' : 'border-[#d1d5db]'}`}
+            className={`flex flex-col items-center justify-center gap-2 w-full h-full min-h-22 border border-dashed rounded-lg cursor-pointer transition text-xs text-[#6b7280] hover:bg-[#f9fafb] ${dragOver ? 'border-[#374151] bg-[#f9fafb]' : 'border-[#d1d5db]'}`}
             onDragOver={e => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleLogoDrop}
@@ -417,8 +453,8 @@ export default function SettingsForm() {
           {settings.logo?.asset?.url && (
             <button
               type="button"
-              onClick={() => setSettings(p => ({ ...p!, logo: undefined }))}
-              className="mt-1 text-[0.6rem] text-red-500 hover:text-red-700"
+              onClick={() => setSettings(p => ({ ...p!, logo: null }))}
+              className="mt-1 text-[0.72rem] text-red-500 hover:text-red-700"
             >
               Remove logo
             </button>
@@ -464,7 +500,7 @@ export default function SettingsForm() {
                 name={id}
                 value={settings[id as keyof Settings] as string || ''}
                 onChange={handleChange}
-                className="font-mono text-[0.65rem]"
+                className="font-mono text-xs"
               />
             </div>
           </div>

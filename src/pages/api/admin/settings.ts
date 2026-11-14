@@ -7,7 +7,10 @@ const SETTINGS_ID = 'siteSettings';
 export const GET: APIRoute = async () => {
   try {
     let settings = await sanityClient.fetch(
-      `*[_type == "settings" && _id == $id][0]`,
+      `*[_type == "settings" && _id == $id][0]{
+        ...,
+        "logo": { "asset": logo.asset->{ _id, url } }
+      }`,
       { id: SETTINGS_ID }
     );
 
@@ -48,8 +51,17 @@ export const GET: APIRoute = async () => {
 
 export const PUT: APIRoute = async ({ request }) => {
   try {
-    const body = await request.json();
-    const updated = await sanityClient.patch(SETTINGS_ID).set(body).commit();
+    const { logo, ...rest } = await request.json();
+    const patch = sanityClient.patch(SETTINGS_ID).set(rest);
+
+    // Logo is stored as a real Sanity image reference. null = removed; a missing asset id = leave as is.
+    if (logo === null) {
+      patch.unset(['logo']);
+    } else if (logo?.asset?._id) {
+      patch.set({ logo: { _type: 'image', asset: { _type: 'reference', _ref: logo.asset._id } } });
+    }
+
+    const updated = await patch.commit();
     return new Response(JSON.stringify(updated), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

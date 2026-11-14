@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Pencil, X, Check, Archive, PartyPopper, FileText, ShoppingCart, Package, CheckCircle, XCircle, LayoutGrid, RotateCcw } from 'lucide-react';
+import { useAppDialog } from './useAppDialog';
+import { Plus, Edit, X, Check, Archive, PartyPopper, FileText, ShoppingCart, Package, CheckCircle, XCircle, LayoutGrid, RotateCcw } from 'lucide-react';
 
 interface Floor {
   _id: string;
@@ -15,6 +16,7 @@ interface Floor {
 }
 
 export default function FloorManager() {
+  const { confirm, notify, dialog } = useAppDialog();
   const [floors, setFloors]           = useState<Floor[]>([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
@@ -46,6 +48,14 @@ export default function FloorManager() {
 
   useEffect(() => { fetchFloors(); }, [showArchived]);
 
+  // Escape closes the add/edit modal
+  useEffect(() => {
+    if (!isAdding && !editingId) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') resetForm(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isAdding, editingId]);
+
   const resetForm = () => {
     setFormData({ code: '', name: '', type: 'party', capacity: 0, isAvailable: true, notes: '' });
     setEditingId(null);
@@ -60,7 +70,7 @@ export default function FloorManager() {
   };
 
   const handleSave = async () => {
-    if (!formData.code.trim()) { alert('Floor code is required.'); return; }
+    if (!formData.code.trim()) { void notify('Floor code is required.'); return; }
     try {
       const url = editingId ? `/api/admin/spaces/${editingId}` : '/api/admin/spaces';
       const res = await fetch(url, {
@@ -71,20 +81,20 @@ export default function FloorManager() {
       if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed to save'); }
       await fetchFloors();
       resetForm();
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { void notify(err.message); }
   };
 
   const handleArchive = async (id: string, code: string) => {
-    if (!confirm(`Archive floor "${code}"? It can be restored later.`)) return;
+    if (!(await confirm(`Archive floor "${code}"? It can be restored later.`))) return;
     try {
       const res = await fetch(`/api/admin/spaces/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to archive');
       await fetchFloors();
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { void notify(err.message); }
   };
 
   const handleRestore = async (id: string) => {
-    if (!confirm('Restore this archived floor?')) return;
+    if (!(await confirm('Restore this archived floor?'))) return;
     try {
       const res = await fetch(`/api/admin/spaces/${id}`, {
         method: 'PUT',
@@ -93,7 +103,7 @@ export default function FloorManager() {
       });
       if (!res.ok) throw new Error('Failed to restore');
       await fetchFloors();
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { void notify(err.message); }
   };
 
   const getTypeLabel = (type: string) => {
@@ -110,12 +120,14 @@ export default function FloorManager() {
   const formOpen = isAdding || !!editingId;
 
   return (
+    <>
+      {dialog}
     <div className="rounded-xl border border-[#e5e7eb] dark:border-white/6 overflow-hidden bg-white">
 
       {/* Toolbar */}
       <div className="px-4 py-3 border-b border-[#e5e7eb] dark:border-white/6 bg-[#f9fafb] flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="text-xs text-[#9ca3af]">
+          <span className="text-xs text-[#6b7280]">
             {floors.length} floor{floors.length !== 1 ? 's' : ''}{showArchived ? ' archived' : ' active'}
           </span>
           <label className="flex items-center gap-1.5 text-xs text-[#6b7280] cursor-pointer select-none">
@@ -141,8 +153,15 @@ export default function FloorManager() {
 
       {/* Add / Edit form */}
       {formOpen && (
-        <div ref={formRef} className="px-4 py-4 bg-[#f9fafb] border-b border-[#e5e7eb]">
-          <p className="text-xs font-semibold text-[#374151] mb-3">{editingId ? 'Edit Floor' : 'Add New Floor'}</p>
+        <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/60 p-4" onMouseDown={resetForm}>
+        <div ref={formRef} role="dialog" aria-modal="true" aria-labelledby="floor-form-title" onMouseDown={(e) => e.stopPropagation()}
+          className="w-full max-w-2xl rounded-xl bg-white p-5 shadow-2xl">
+          <div className="flex items-center justify-between mb-4">
+            <p id="floor-form-title" className="text-sm font-semibold text-[#111827]">{editingId ? 'Edit Floor' : 'Add New Floor'}</p>
+            <button type="button" aria-label="Close" onClick={resetForm} className="p-1 rounded-md hover:bg-[#f3f4f6] transition">
+              <X className="w-4 h-4 text-[#6b7280]" />
+            </button>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <input type="text" placeholder="Code (e.g. P089)" value={formData.code}
               onChange={e => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
@@ -179,6 +198,7 @@ export default function FloorManager() {
             </button>
           </div>
         </div>
+        </div>
       )}
 
       {/* Table */}
@@ -186,19 +206,19 @@ export default function FloorManager() {
         <table className="w-full text-sm">
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#f9fafb] border-b border-[#e5e7eb] dark:border-white/6 sticky top-0 z-10">
-              <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Code</th>
-              <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Name</th>
-              <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Type</th>
-              <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Capacity</th>
-              <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Status</th>
-              {showArchived && <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Archived</th>}
-              <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Actions</th>
+              <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Code</th>
+              <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Name</th>
+              <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Type</th>
+              <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Capacity</th>
+              <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Status</th>
+              {showArchived && <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Archived</th>}
+              <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#f3f4f6] dark:divide-white/4">
             {floors.length === 0 ? (
               <tr>
-                <td colSpan={showArchived ? 7 : 6} className="py-14 text-center text-[#9ca3af]">
+                <td colSpan={showArchived ? 7 : 6} className="py-14 text-center text-[#6b7280]">
                   <LayoutGrid className="w-8 h-8 mx-auto mb-2 opacity-30" />
                   <p className="text-xs">{showArchived ? 'No archived floors.' : 'No floor plans yet. Add your first floor above.'}</p>
                 </td>
@@ -210,7 +230,7 @@ export default function FloorManager() {
                 <td className="px-4 py-3 text-xs text-[#6b7280]">{getTypeLabel(floor.type)}</td>
                 <td className="px-4 py-3 text-xs text-[#6b7280]">{floor.capacity || '—'}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-semibold ${
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.72rem] font-semibold ${
                     floor.isArchived ? 'bg-[#6b7280] text-white'
                     : floor.isAvailable ? 'bg-emerald-500 text-white'
                     : 'bg-red-500 text-white'
@@ -223,7 +243,7 @@ export default function FloorManager() {
                   </span>
                 </td>
                 {showArchived && (
-                  <td className="px-4 py-3 text-xs text-[#9ca3af]">
+                  <td className="px-4 py-3 text-xs text-[#6b7280]">
                     {floor.archivedAt ? new Date(floor.archivedAt).toLocaleDateString() : '—'}
                   </td>
                 )}
@@ -237,11 +257,11 @@ export default function FloorManager() {
                     ) : (
                       <>
                         <button type="button" title="Edit" onClick={() => startEdit(floor)}
-                          className="p-1.5 rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
-                          <Pencil className="w-3.5 h-3.5" />
+                          className="p-1.5 rounded-md text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
+                          <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button type="button" title="Archive" onClick={() => handleArchive(floor._id, floor.code)}
-                          className="p-1.5 rounded-md text-[#9ca3af] hover:text-amber-600 hover:bg-amber-50 transition">
+                          className="p-1.5 rounded-md text-[#6b7280] hover:text-amber-600 hover:bg-amber-50 transition">
                           <Archive className="w-3.5 h-3.5" />
                         </button>
                       </>
@@ -255,10 +275,11 @@ export default function FloorManager() {
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2.5 border-t border-[#e5e7eb] dark:border-white/6 bg-[#f9fafb] flex items-center justify-between text-xs text-[#9ca3af]">
+      <div className="px-4 py-2.5 border-t border-[#e5e7eb] dark:border-white/6 bg-[#f9fafb] flex items-center justify-between text-xs text-[#6b7280]">
         <span>{floors.length} floor{floors.length !== 1 ? 's' : ''} {showArchived ? 'archived' : 'total'}</span>
         {!showArchived && <span>{floors.filter(f => f.isAvailable).length} available</span>}
       </div>
     </div>
+    </>
   );
 }

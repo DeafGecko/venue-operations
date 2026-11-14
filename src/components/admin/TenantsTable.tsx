@@ -1,6 +1,6 @@
 // src/components/admin/TenantsTable.tsx
 import { useState } from 'react';
-import { Plus, X, Search, Pencil, Trash2, RefreshCw } from 'lucide-react';
+import { Plus, X, Search, Edit, Trash2, RefreshCw } from 'lucide-react';
 import CustomSelect from './CustomSelect';
 
 interface Tenant {
@@ -102,11 +102,11 @@ export default function TenantsTable() {
       <div className="bg-white border border-[#e5e7eb] rounded-xl shadow-sm flex flex-col max-h-[calc(100vh-13rem)]">
         <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center gap-2 flex-wrap shrink-0">
           <div className="relative flex-1 min-w-40">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b7280]" />
             <input type="search" placeholder="Search tenants…" value={search} onChange={e => setSearch(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 border border-[#e5e7eb] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
           </div>
-          <div className="flex items-center gap-2 text-xs text-[#9ca3af]">
+          <div className="flex items-center gap-2 text-xs text-[#6b7280]">
             <span className="text-emerald-600">{tenants.filter(t => leaseStatus(t) === 'active').length} active</span>
             <span>·</span>
             <span className="text-red-500">{tenants.filter(t => leaseStatus(t) === 'expired').length} expired</span>
@@ -125,39 +125,39 @@ export default function TenantsTable() {
             <thead className="sticky top-0 z-10">
               <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
                 {['Account #', 'Name', 'Business Type', 'Unit', 'Lease Period', 'Rent / mo', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">{h}</th>
+                  <th key={h} className="text-left px-4 py-3 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e5e7eb]">
               {filtered.length === 0 ? (
-                <tr><td colSpan={8} className="py-10 text-center text-xs text-[#9ca3af]">No tenants found.</td></tr>
+                <tr><td colSpan={8} className="py-10 text-center text-xs text-[#6b7280]">No tenants found.</td></tr>
               ) : filtered.map(t => {
                 const status = leaseStatus(t);
                 return (
                   <tr key={t._id} className="hover:bg-[#fafafa] transition">
-                    <td className="px-3 py-2 font-mono text-xs text-[#6b7280]">{t.accountNumber || <span className="text-amber-400 italic">—</span>}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{t.accountNumber || <span className="text-amber-400 italic">—</span>}</td>
+                    <td className="px-4 py-3">
                       <p className="text-sm font-medium text-[#111827]">{t.name}</p>
-                      <p className="text-xs text-[#9ca3af]">{t.email}</p>
+                      <p className="text-xs text-[#6b7280]">{t.email}</p>
                     </td>
-                    <td className="px-3 py-2 text-sm text-[#6b7280]">{t.businessType || '—'}</td>
-                    <td className="px-3 py-2 text-sm font-medium text-[#374151]">{t.unit || '—'}</td>
-                    <td className="px-3 py-2 text-xs text-[#6b7280]">
+                    <td className="px-4 py-3 text-sm text-[#6b7280]">{t.businessType || '—'}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-[#374151]">{t.unit || '—'}</td>
+                    <td className="px-4 py-3 text-xs text-[#6b7280]">
                       {t.leaseStart ? new Date(t.leaseStart).toLocaleDateString() : '—'}
                       {t.leaseStart && t.leaseEnd ? ' → ' : ''}
                       {t.leaseEnd ? new Date(t.leaseEnd).toLocaleDateString() : ''}
                     </td>
-                    <td className="px-3 py-2 text-sm text-[#111827]">{t.rentAmount ? `$${t.rentAmount.toLocaleString()}` : '—'}</td>
-                    <td className="px-3 py-2">
-                      <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle[status]}`}>
+                    <td className="px-4 py-3 text-sm text-[#111827]">{t.rentAmount ? `$${t.rentAmount.toLocaleString()}` : '—'}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.72rem] font-medium ${statusStyle[status]}`}>
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                       </span>
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <button type="button" title="Edit tenant" onClick={() => openEdit(t)} className="p-1.5 rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition"><Pencil className="w-3.5 h-3.5" /></button>
-                        <button type="button" title="Delete tenant" onClick={() => setDeleteTarget(t)} className="p-1.5 rounded-md text-[#9ca3af] hover:text-red-600 hover:bg-red-50 transition"><Trash2 className="w-3.5 h-3.5" /></button>
+                        <button type="button" title="Edit tenant" onClick={() => openEdit(t)} className="p-1.5 rounded-md text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6] transition"><Edit className="w-3.5 h-3.5" /></button>
+                        <button type="button" title="Delete tenant" onClick={() => setDeleteTarget(t)} className="p-1.5 rounded-md text-[#6b7280] hover:text-red-600 hover:bg-red-50 transition"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
                     </td>
                   </tr>
@@ -215,7 +215,7 @@ export default function TenantsTable() {
               </div>
               <div>
                 <Label>Status</Label>
-                <CustomSelect value={form.status as string} onChange={v => setForm({ ...form, status: v as Tenant['status'] })}
+                <CustomSelect centered value={form.status as string} onChange={v => setForm({ ...form, status: v as Tenant['status'] })}
                   options={[
                     { value: 'active', label: 'Active' },
                     { value: 'pending', label: 'Pending' },

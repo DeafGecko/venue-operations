@@ -9,11 +9,12 @@ import BookingTable from '../../components/admin/BookingTable';
 // Fetch all bookings
 const bookings = await sanityClient.fetch(`
   *[_type == "booking"] | order(createdAt desc) {
-    _id,
+        "clientName": coalesce(*[_id == ^.clientId][0].name, clientName),
+    "email": coalesce(*[_id == ^.clientId][0].email, email),
+    "phone": coalesce(*[_id == ^.clientId][0].phone, phone),
+    clientId,
+_id,
     accountNumber,
-    clientName,
-    email,
-    phone,
     eventDate,
     eventType,
     bookingType,
@@ -27,8 +28,25 @@ const bookings = await sanityClient.fetch(`
     createdAt
   }
 `);
+
+// Month filter from the dashboard: ?month=YYYY-MM. Anything else shows all bookings.
+const rawMonth = Astro.url.searchParams.get('month') ?? '';
+const monthFilter = /^\d{4}-(0[1-9]|1[0-2])$/.test(rawMonth) ? rawMonth : '';
+const visibleBookings = monthFilter
+  ? bookings.filter((b: any) => (b.eventDate ?? '').startsWith(monthFilter))
+  : bookings;
+const monthLabel = monthFilter
+  ? new Date(`${monthFilter}-01T00:00:00`).toLocaleString('en-US', { month: 'long', year: 'numeric' })
+  : '';
 ---
 
-<AdminLayout title="Bookings" subtitle={`${bookings.length} total bookings`}>
-  <BookingTable client:load initialBookings={bookings} />
+{/* Optional month filter from the dashboard, e.g. ?month=2026-11 */}
+{monthFilter && (
+  <div class="mb-3 flex items-center justify-between gap-3 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm">
+    <span>Showing <strong>{monthLabel}</strong>: {visibleBookings.length} booking{visibleBookings.length === 1 ? '' : 's'}</span>
+    <a href="/admin/" class="text-[#1a73e8] hover:underline">Show all bookings</a>
+  </div>
+)}
+<AdminLayout title="Bookings" subtitle={monthFilter ? `${visibleBookings.length} bookings in ${monthLabel}` : `${bookings.length} total bookings`}>
+  <BookingTable client:load initialBookings={visibleBookings} openNew={Astro.url.searchParams.get('new') === '1' && ['admin', 'manager'].includes((Astro.cookies.get('admin_session')?.value ?? '').split(':')[1] ?? '')} />
 </AdminLayout>

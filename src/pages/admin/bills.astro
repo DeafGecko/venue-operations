@@ -3,6 +3,7 @@
 // Bills & Payments – financial overview and payment recording
 
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import { formatMoney } from '../../lib/money';
 import { sanityClient } from "../../lib/sanity";
 import BillsTable from "../../components/admin/BillsTable";
 import { 
@@ -15,10 +16,12 @@ import {
 // Fetch all bookings with financial fields
 const bookings = await sanityClient.fetch(`
   *[_type == "booking"] | order(createdAt desc) {
-      _id,
+            "clientName": coalesce(*[_id == ^.clientId][0].name, clientName),
+      "email": coalesce(*[_id == ^.clientId][0].email, email),
+      "phone": coalesce(*[_id == ^.clientId][0].phone, phone),
+      clientId,
+_id,
       accountNumber,
-      clientName,
-      email,
       totalPrice,
       amountPaid,
       paymentStatus,
@@ -43,8 +46,8 @@ const totalOutstanding = totalRevenue - totalPaid;
         <DollarSign className="w-3.5 h-3.5" />
       </div>
       <div class="min-w-0">
-        <p class="text-[0.55rem] font-semibold uppercase tracking-widest text-[#9ca3af] truncate">Total Revenue</p>
-        <p class="text-base font-light text-[#111827] truncate">${totalRevenue.toFixed(2)}</p>
+        <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280] truncate">Total Revenue</p>
+        <p class="text-base font-light text-[#111827] truncate">${formatMoney(totalRevenue)}</p>
       </div>
     </div>
 
@@ -53,8 +56,8 @@ const totalOutstanding = totalRevenue - totalPaid;
         <CheckCircle className="w-3.5 h-3.5" />
       </div>
       <div class="min-w-0">
-        <p class="text-[0.55rem] font-semibold uppercase tracking-widest text-[#9ca3af] truncate">Total Paid</p>
-        <p class="text-base font-light text-emerald-600 truncate">${totalPaid.toFixed(2)}</p>
+        <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280] truncate">Total Paid</p>
+        <p class="text-base font-light text-emerald-600 truncate">${formatMoney(totalPaid)}</p>
       </div>
     </div>
 
@@ -63,8 +66,8 @@ const totalOutstanding = totalRevenue - totalPaid;
         <AlertCircle className="w-3.5 h-3.5" />
       </div>
       <div class="min-w-0">
-        <p class="text-[0.55rem] font-semibold uppercase tracking-widest text-[#9ca3af] truncate">Outstanding</p>
-        <p class="text-base font-light text-red-600 truncate">${totalOutstanding.toFixed(2)}</p>
+        <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280] truncate">Outstanding</p>
+        <p class="text-base font-light text-red-600 truncate">${formatMoney(totalOutstanding)}</p>
       </div>
     </div>
 

@@ -17,14 +17,22 @@ import {
 // Fetch all bookings
 const bookings = await sanityClient.fetch(`
   *[_type == "booking"] {
-      _id,
+            "clientName": coalesce(*[_id == ^.clientId][0].name, clientName),
+      "email": coalesce(*[_id == ^.clientId][0].email, email),
+      "phone": coalesce(*[_id == ^.clientId][0].phone, phone),
+      clientId,
+_id,
       accountNumber,
-      clientName,
       eventDate,
       paymentStatus,
       bookingType,
       assignedSpace,
-      guestCount
+      guestCount,
+      eventType,
+      startTime,
+      endTime,
+      totalPrice,
+      amountPaid
       }
 `);
 

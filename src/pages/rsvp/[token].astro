@@ -6,6 +6,8 @@ const { token } = Astro.params;
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Event RSVP</title>
   <style>
@@ -113,6 +115,7 @@ const { token } = Astro.params;
             <label for="notes">Dietary Restrictions or Notes <span style="font-weight:400;color:#9ca3af">(optional)</span></label>
             <textarea id="notes" placeholder="e.g. vegetarian, nut allergy…"></textarea>
           </div>
+          <div class="error-msg" id="formErr" role="alert"></div>
           <button type="submit" class="submit-btn" id="submitBtn">Register →</button>
         </form>
       `;
@@ -126,6 +129,7 @@ const { token } = Astro.params;
         const notes = document.getElementById('notes').value.trim();
         if (!name) { document.getElementById('nameErr').textContent = 'Please enter your name.'; return; }
         document.getElementById('nameErr').textContent = '';
+        document.getElementById('formErr').textContent = '';
         const btn = document.getElementById('submitBtn');
         btn.disabled = true; btn.textContent = 'Submitting…';
         try {
@@ -138,7 +142,7 @@ const { token } = Astro.params;
           showSuccess(name, partySize);
         } catch (err) {
           btn.disabled = false; btn.textContent = 'Register →';
-          alert(err.message || 'Something went wrong. Please try again.');
+          document.getElementById('formErr').textContent = err.message || 'Something went wrong. Please try again.';
         }
       };
     }

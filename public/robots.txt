@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /book
+Disallow: /admin
+Disallow: /api/admin
+
+Sitemap: https://venue-operations-api.workers.dev/sitemap.xml

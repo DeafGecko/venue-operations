@@ -1,18 +1,69 @@
 ---
+import '../styles/global.css';
+
 export interface Props {
   title: string;
+  description?: string;
+  noindex?: boolean;
 }
-const { title } = Astro.props;
+const {
+  title,
+  description = 'The Factory event venue in Franklin, TN. Request a booking for your wedding, corporate event, birthday, or conference.',
+  noindex = false,
+} = Astro.props;
+
+// Public address of the site, used for canonical and social links.
+const SITE_URL = 'https://venue-operations-api.workers.dev';
+const canonical = new URL(Astro.url.pathname, SITE_URL).href;
+
+// Structured data so search engines can show the venue as a place.
+const venueJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'EventVenue',
+  name: 'The Factory',
+  url: SITE_URL,
+  description,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Franklin',
+    addressRegion: 'TN',
+    addressCountry: 'US',
+  },
+};
 ---
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex ? (
+      <meta name="robots" content="noindex, nofollow" />
+    ) : (
+      <meta name="robots" content="index, follow" />
+    )}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="The Factory" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <script type="application/ld+json" set:html={JSON.stringify(venueJsonLd)} />
   </head>
   <body class="bg-gray-50">
+    <header class="bg-white border-b border-gray-200">
+      <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="/book" class="text-lg font-semibold text-gray-900">The Factory</a>
+        <span class="text-sm text-gray-600">Franklin, TN</span>
+      </div>
+    </header>
     <slot />
   </body>
 </html>

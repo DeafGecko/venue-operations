@@ -23,6 +23,8 @@ const resetSuccess = Astro.url.searchParams.get('reset');
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Login · {venueName}</title>
   <link rel="stylesheet" href="/styles/global.css" />
@@ -38,11 +40,35 @@ const resetSuccess = Astro.url.searchParams.get('reset');
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background: var(--sidebarBg);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
       margin: 0;
       padding: 1rem;
+    }
+
+    .back-wrap {
+      position: fixed;
+      top: 1rem;
+      left: calc(1rem + 20px);
+      z-index: 10;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #ffffff;
+      font-size: 0.9rem;
+      text-decoration: none;
+      padding: 0.35rem 0;
+    }
+
+    .back-link:hover,
+    .back-link:focus-visible {
+      text-decoration: underline;
+      outline: none;
     }
 
     .login-box {
@@ -72,8 +98,15 @@ const resetSuccess = Astro.url.searchParams.get('reset');
 
     .sub {
       font-size: 0.8rem;
-      color: #8e8e93;
+      color: #6b6b70;
       margin-bottom: 1.75rem;
+    }
+
+    .field-error {
+      color: #b91c1c;
+      font-size: 0.8rem;
+      text-align: left;
+      margin: -0.9rem 0 1rem;
     }
 
     .error {
@@ -83,7 +116,6 @@ const resetSuccess = Astro.url.searchParams.get('reset');
       padding: 0.5rem 0.75rem;
       background: #fee2e2;
       border-radius: 6px;
-      border-left: 3px solid #b91c1c;
       text-align: left;
     }
 
@@ -94,7 +126,6 @@ const resetSuccess = Astro.url.searchParams.get('reset');
       padding: 0.5rem 0.75rem;
       background: #d1fae5;
       border-radius: 6px;
-      border-left: 3px solid #065f46;
       text-align: left;
     }
 
@@ -164,12 +195,18 @@ const resetSuccess = Astro.url.searchParams.get('reset');
     .footer-text {
       margin-top: 1.5rem;
       font-size: 0.7rem;
-      color: #b0a898;
+      color: #6b6157;
       text-align: center;
     }
   </style>
 </head>
 <body>
+
+  <div class="back-wrap">
+    <a href="/book" id="back-link" class="back-link">
+      <span aria-hidden="true">←</span> Back
+    </a>
+  </div>
 
   <div class="login-box">
     <img src={logoUrl} alt="{venueName} logo" class="logo" />
@@ -180,15 +217,50 @@ const resetSuccess = Astro.url.searchParams.get('reset');
     {error && <p class="error">{error === '1' ? 'Invalid email or password.' : error}</p>}
     {resetSuccess && <p class="success">Your password has been reset. Please log in.</p>}
 
-    <form method="POST" action="/api/admin/auth">
+    <form method="POST" action="/api/admin/auth" id="login-form" novalidate>
       <label for="email">Email</label>
-      <input type="email" id="email" name="email" placeholder="admin@venue.com" required />
+      <input type="email" id="email" name="email" placeholder="admin@venue.com" required aria-describedby="email-err" />
+      <p class="field-error" id="email-err" role="alert" hidden></p>
 
       <label for="password">Password</label>
-      <input type="password" id="password" name="password" placeholder="••••••••" required />
+      <input type="password" id="password" name="password" placeholder="••••••••" required aria-describedby="password-err" />
+      <p class="field-error" id="password-err" role="alert" hidden></p>
 
       <button type="submit">Log In</button>
     </form>
+    <script is:inline>
+      // Our own validation messages, instead of the browser's pop-up bubbles.
+      (() => {
+        const form = document.getElementById("login-form");
+        const email = document.getElementById("email");
+        const password = document.getElementById("password");
+        const emailErr = document.getElementById("email-err");
+        const passwordErr = document.getElementById("password-err");
+        const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        const show = (input, box, message) => {
+          box.textContent = message;
+          box.hidden = !message;
+          input.setAttribute("aria-invalid", message ? "true" : "false");
+        };
+
+        form.addEventListener("submit", (e) => {
+          const emailValue = email.value.trim();
+          const emailMessage = !emailValue ? "Enter your email address."
+            : !EMAIL.test(emailValue) ? "Enter a valid email address, like name@example.com."
+            : "";
+          const passwordMessage = password.value ? "" : "Enter your password.";
+          show(email, emailErr, emailMessage);
+          show(password, passwordErr, passwordMessage);
+          if (emailMessage || passwordMessage) {
+            e.preventDefault();
+            (emailMessage ? email : password).focus();
+          }
+        });
+        email.addEventListener("input", () => show(email, emailErr, ""));
+        password.addEventListener("input", () => show(password, passwordErr, ""));
+      })();
+    </script>
 
     <div class="forgot-link">
       <a href="/admin/forgot-password">Forgot password?</a>
@@ -199,5 +271,14 @@ const resetSuccess = Astro.url.searchParams.get('reset');
     </div>
   </div>
 
+  <script is:inline>
+    // Back goes to the page the user came from; with no history, it goes to the booking page.
+    document.getElementById("back-link")?.addEventListener("click", (e) => {
+      if (window.history.length > 1) {
+        e.preventDefault();
+        window.history.back();
+      }
+    });
+  </script>
 </body>
 </html>

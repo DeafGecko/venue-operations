@@ -1,5 +1,7 @@
 // src/components/admin/BillsTable.tsx
 import { useState } from 'react';
+import { formatMoney } from '../../lib/money';
+import { useAppDialog } from './useAppDialog';
 import { DollarSign, X, XCircle, RefreshCw } from 'lucide-react';
 
 interface Booking {
@@ -40,6 +42,7 @@ const statusLabel = (s: string) =>
                     'Unpaid';
 
 export default function BillsTable({ initialBookings }: Props) {
+  const { confirm, notify, dialog } = useAppDialog();
   const [bookings, setBookings]       = useState(initialBookings);
   const [loading, setLoading]         = useState(false);
   const [recordingId, setRecordingId] = useState<string | null>(null);
@@ -101,7 +104,7 @@ export default function BillsTable({ initialBookings }: Props) {
   };
 
   const handleMarkRefunded = async (id: string) => {
-    if (!confirm('Mark this refund as paid out? Amount paid will be reset to the total.')) return;
+    if (!(await confirm('Mark this refund as paid out? Amount paid will be reset to the total.'))) return;
     setLoading(true); setError(null);
     try {
       const booking = bookings.find(b => b._id === id);
@@ -121,6 +124,8 @@ export default function BillsTable({ initialBookings }: Props) {
   };
 
   return (
+    <>
+      {dialog}
     <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm flex flex-col max-h-[calc(100vh-13rem)]">
 
       {/* Toolbar */}
@@ -154,7 +159,7 @@ export default function BillsTable({ initialBookings }: Props) {
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
               {['Account', 'Client', 'Date', 'Total', 'Paid', 'Balance', 'Status', 'Actions'].map(h => (
-                <th key={h} className={`text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]
+                <th key={h} className={`text-left px-4 py-3 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]
                   ${h === 'Date' ? 'hidden md:table-cell' : ''}
                   ${h === 'Actions' ? 'w-36' : ''}`}>{h}</th>
               ))}
@@ -163,7 +168,7 @@ export default function BillsTable({ initialBookings }: Props) {
           <tbody className="divide-y divide-[#e5e7eb]">
             {bookings.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-[#9ca3af]">
+                <td colSpan={8} className="py-12 text-center text-[#6b7280]">
                   <DollarSign className="w-10 h-10 mx-auto mb-2 text-[#e5e7eb]" />
                   <p className="text-xs">No billing records found.</p>
                 </td>
@@ -173,27 +178,27 @@ export default function BillsTable({ initialBookings }: Props) {
               const effectiveStatus = deriveStatus(b.totalPrice, b.amountPaid);
               return (
                 <tr key={b._id} className="hover:bg-[#fafafa] transition">
-                  <td className="px-3 py-2 font-mono text-xs text-[#6b7280]">
+                  <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">
                     {b.accountNumber || <span className="text-amber-500 italic">unassigned</span>}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3">
                     <p className="text-sm font-medium text-[#111827] leading-tight">{b.clientName}</p>
-                    <p className="text-[0.65rem] text-[#9ca3af]">{b.email}</p>
+                    <p className="text-xs text-[#6b7280]">{b.email}</p>
                   </td>
-                  <td className="px-3 py-2 text-xs text-[#6b7280] hidden md:table-cell">
+                  <td className="px-4 py-3 text-xs text-[#6b7280] hidden md:table-cell">
                     {b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                   </td>
-                  <td className="px-3 py-2 text-xs font-medium text-[#111827]">${(b.totalPrice || 0).toFixed(2)}</td>
-                  <td className="px-3 py-2 text-xs text-[#6b7280]">${(b.amountPaid || 0).toFixed(2)}</td>
-                  <td className={`px-3 py-2 text-xs font-medium ${balance > 0 ? 'text-red-600' : balance < 0 ? 'text-blue-600' : 'text-emerald-600'}`}>
-                    ${balance.toFixed(2)}
+                  <td className="px-4 py-3 text-xs font-medium text-[#111827]">${formatMoney(b.totalPrice || 0)}</td>
+                  <td className="px-4 py-3 text-xs text-[#6b7280]">${formatMoney(b.amountPaid || 0)}</td>
+                  <td className={`px-4 py-3 text-xs font-medium ${balance > 0 ? 'text-red-600' : balance < 0 ? 'text-blue-600' : 'text-emerald-600'}`}>
+                    ${formatMoney(balance)}
                   </td>
-                  <td className="px-3 py-2">
-                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium ${statusStyle(effectiveStatus)}`}>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.72rem] font-medium ${statusStyle(effectiveStatus)}`}>
                       {statusLabel(effectiveStatus)}
                     </span>
                   </td>
-                  <td className="px-3 py-2 w-36">
+                  <td className="px-4 py-3 w-36">
                     {recordingId === b._id ? (
                       <div className="flex items-center gap-1">
                         <input type="number" step="0.01" min="0.01" max={balance}
@@ -207,7 +212,7 @@ export default function BillsTable({ initialBookings }: Props) {
                           Save
                         </button>
                         <button type="button" onClick={cancelRecording} title="Cancel"
-                          className="h-7 w-7 flex items-center justify-center rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
+                          className="h-7 w-7 flex items-center justify-center rounded-md text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -217,7 +222,7 @@ export default function BillsTable({ initialBookings }: Props) {
                           ? () => handleMarkRefunded(b._id)
                           : () => { setRecordingId(b._id); setPaymentAmount(balance > 0 ? balance : 0); setError(null); }}
                         disabled={effectiveStatus === 'paid'}
-                        className={`w-full h-7 rounded-md text-xs font-medium transition ${effectiveStatus === 'unpaid' || effectiveStatus === 'partial' ? 'btn-primary' : effectiveStatus === 'credit' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed'}`}>
+                        className={`w-full h-7 rounded-md text-xs font-medium transition ${effectiveStatus === 'unpaid' || effectiveStatus === 'partial' ? 'btn-primary' : effectiveStatus === 'credit' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-[#f3f4f6] text-[#6b7280] cursor-not-allowed'}`}>
                         {effectiveStatus === 'paid' ? 'Fully Paid' : effectiveStatus === 'credit' ? 'Mark Refunded' : 'Record Payment'}
                       </button>
                     )}
@@ -227,12 +232,12 @@ export default function BillsTable({ initialBookings }: Props) {
             })}
           </tbody>
           <tfoot>
-            <tr className="bg-[#f9fafb] border-t-2 border-[#e5e7eb]">
-              <td colSpan={3} className="px-3 py-2 text-xs font-semibold text-[#374151]">Totals</td>
-              <td className="px-3 py-2 text-xs font-semibold text-[#111827]">${totalRevenue.toFixed(2)}</td>
-              <td className="px-3 py-2 text-xs font-semibold text-[#111827]">${totalPaid.toFixed(2)}</td>
-              <td className={`px-3 py-2 text-xs font-semibold ${totalOutstanding > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                ${totalOutstanding.toFixed(2)}
+            <tr className="bg-[#f9fafb] border-t border-[#e5e7eb]">
+              <td colSpan={3} className="px-4 py-3 text-xs font-semibold text-[#374151]">Totals</td>
+              <td className="px-4 py-3 text-xs font-semibold text-[#111827]">${formatMoney(totalRevenue)}</td>
+              <td className="px-4 py-3 text-xs font-semibold text-[#111827]">${formatMoney(totalPaid)}</td>
+              <td className={`px-4 py-3 text-xs font-semibold ${totalOutstanding > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                ${formatMoney(totalOutstanding)}
               </td>
               <td colSpan={2} />
             </tr>
@@ -241,10 +246,11 @@ export default function BillsTable({ initialBookings }: Props) {
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2 border-t border-[#e5e7eb] flex items-center justify-between text-xs text-[#9ca3af] shrink-0">
+      <div className="px-4 py-2 border-t border-[#e5e7eb] flex items-center justify-between text-xs text-[#6b7280] shrink-0">
         <span>{bookings.length} record{bookings.length !== 1 ? 's' : ''}</span>
-        <span>Outstanding: <strong className="text-red-600">${totalOutstanding.toFixed(2)}</strong></span>
+        <span>Outstanding: <strong className="text-red-600">${formatMoney(totalOutstanding)}</strong></span>
       </div>
     </div>
+    </>
   );
 }

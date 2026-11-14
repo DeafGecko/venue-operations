@@ -1,0 +1,56 @@
+---
+// Shared error page: page not found
+const code = '404';
+const heading = 'Page not found';
+const message = 'The page you are looking for does not exist or may have moved.';
+const url = Astro.url;
+const isAdmin = url.pathname.startsWith('/admin') || url.pathname.startsWith('/api/admin');
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{code} · {heading} · The Factory</title>
+    <style>
+      :root { --bg: #f5f4f2; --card: #ffffff; --ink: #1a1a1a; --muted: #5f5b57; --accent: #8f0000; --line: #e4e0db; }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) { --bg: #14110f; --card: #1f1b18; --ink: #f5f1ec; --muted: #cfc7bd; --accent: #e06a6a; --line: #3a332d; }
+      }
+      :root[data-theme="dark"] { --bg: #14110f; --card: #1f1b18; --ink: #f5f1ec; --muted: #cfc7bd; --accent: #e06a6a; --line: #3a332d; }
+      html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); }
+      body { font-family: Inter, system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.25rem; box-sizing: border-box; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); max-width: 460px; width: 100%; padding: 2.25rem 2rem; text-align: center; }
+      .code { font-size: 3.25rem; font-weight: 300; letter-spacing: 2px; color: var(--accent); margin: 0; line-height: 1; }
+      h1 { font-size: 1.35rem; font-weight: 500; margin: 0.75rem 0 0.5rem; }
+      p { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin: 0 0 1.5rem; }
+      .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+      .btn { display: inline-flex; align-items: center; padding: 0.6rem 1.1rem; border-radius: 10px; font-size: 0.9rem; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: transparent; cursor: pointer; font-family: inherit; }
+      .btn-primary { background: var(--accent); color: #ffffff; border-color: var(--accent); }
+      .btn:hover { opacity: 0.88; }
+      .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    </style>
+  </head>
+  <body>
+    <main class="card" role="main">
+      <p class="code" aria-hidden="true">{code}</p>
+      <h1>{heading}</h1>
+      <p>{message}</p>
+      <div class="actions">
+        <button type="button" class="btn" id="go-back">← Go back</button>
+        <a class="btn btn-primary" href={isAdmin ? '/admin/dashboard' : '/book'}>{isAdmin ? 'Admin dashboard' : 'Book an event'}</a>
+      </div>
+    </main>
+    <script is:inline>
+      // Back uses the page the user came from; with no history it falls back to the home link.
+      document.getElementById("go-back")?.addEventListener("click", () => {
+        if (window.history.length > 1) window.history.back();
+        else window.location.href = "/";
+      });
+    </script>
+  </body>
+</html>

@@ -1,5 +1,6 @@
 // src/components/admin/ContactsTable.tsx
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useAppDialog } from './useAppDialog';
 import { Phone, Mail, MapPin, Search, ChevronUp, ChevronDown, X, Download, Tag, ExternalLink, Camera, ZoomIn, ZoomOut, Plus, FileText, Upload } from 'lucide-react';
 
 // ── Avatar Crop Modal ─────────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ function AvatarCropModal({ src, onConfirm, onCancel }: {
       <div className="bg-white rounded-xl shadow-2xl p-5 flex flex-col gap-4 w-80" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-[#111827]">Crop Avatar</p>
-          <button type="button" onClick={onCancel} className="text-[#9ca3af] hover:text-[#374151] text-lg leading-none">&times;</button>
+          <button type="button" onClick={onCancel} className="text-[#6b7280] hover:text-[#374151] text-lg leading-none">&times;</button>
         </div>
         <div className="flex justify-center">
           <canvas ref={canvasRef} width={SIZE} height={SIZE}
@@ -82,15 +83,15 @@ function AvatarCropModal({ src, onConfirm, onCancel }: {
           />
         </div>
         <div className="flex items-center gap-2">
-          <ZoomOut className="w-3.5 h-3.5 text-[#9ca3af] shrink-0" />
+          <ZoomOut className="w-3.5 h-3.5 text-[#6b7280] shrink-0" />
           <input type="range" min={0.1} max={5} step={0.01} value={zoom}
             aria-label="Zoom" title="Zoom"
             onChange={e => setZoom(Number(e.target.value))}
             className="flex-1 accent-[#374151] h-1.5"
           />
-          <ZoomIn className="w-3.5 h-3.5 text-[#9ca3af] shrink-0" />
+          <ZoomIn className="w-3.5 h-3.5 text-[#6b7280] shrink-0" />
         </div>
-        <p className="text-[0.6rem] text-center text-[#9ca3af] -mt-2">Drag to reposition · Scroll or slide to zoom</p>
+        <p className="text-[0.72rem] text-center text-[#6b7280] -mt-2">Drag to reposition · Scroll or slide to zoom</p>
         <div className="flex gap-2 pt-1">
           <button type="button" onClick={onCancel} className="flex-1 py-1.5 text-xs border border-[#e5e7eb] rounded-md hover:bg-[#f9fafb] transition">Cancel</button>
           <button type="button" onClick={handleConfirm} className="flex-1 py-1.5 text-xs rounded-md btn-primary transition">Apply</button>
@@ -232,7 +233,7 @@ function RoleBadges({ roles }: { roles: ContactRole[] }) {
   return (
     <div className="flex flex-wrap gap-1">
       {unique.map(type => (
-        <span key={type} className={`px-2 py-0.5 rounded-full text-[0.6rem] font-semibold uppercase tracking-wide ${SOURCE_COLORS[type]}`}>
+        <span key={type} className={`px-2 py-0.5 rounded-full text-[0.72rem] font-semibold uppercase tracking-wide ${SOURCE_COLORS[type]}`}>
           {type}
         </span>
       ))}
@@ -286,7 +287,7 @@ function StatusCell({ contact, onSave }: {
       <button
         type="button" disabled={saving}
         onClick={() => setOpen(o => !o)}
-        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[0.65rem] font-medium transition ${cfg.pill} disabled:opacity-60`}
+        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs font-medium transition ${cfg.pill} disabled:opacity-60`}
       >
         {cfg.label}
         <ChevronDown className="w-2.5 h-2.5 opacity-70" />
@@ -324,6 +325,7 @@ const CONTRACT_STATUS_PILL: Record<string, string> = {
 function ContactContracts({ contactId, contactName, contactEmail }: {
   contactId: string; contactName: string; contactEmail?: string;
 }) {
+  const { confirm, notify, dialog } = useAppDialog();
   const [contracts, setContracts] = useState<DrawerContract[]>([]);
   const [loading, setLoading]     = useState(true);
   const [adding, setAdding]       = useState(false);
@@ -365,16 +367,18 @@ function ContactContracts({ contactId, contactName, contactEmail }: {
       });
       if (!res.ok) throw new Error('Upload failed');
       await load();
-    } catch (e: any) { alert(e.message); }
+    } catch (e: any) { void notify(e.message); }
     finally { setUploadingId(null); }
   };
 
   return (
+    <>
+      {dialog}
     <div className="px-5 pt-5">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Contracts</p>
+        <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Contracts</p>
         <button type="button" onClick={() => setAdding(a => !a)}
-          className="text-[0.6rem] text-[#9ca3af] hover:text-[#374151] transition flex items-center gap-0.5">
+          className="text-[0.72rem] text-[#6b7280] hover:text-[#374151] transition flex items-center gap-0.5">
           <Plus className="w-3 h-3" /> New
         </button>
       </div>
@@ -393,9 +397,9 @@ function ContactContracts({ contactId, contactName, contactEmail }: {
           </select>
           <div className="flex gap-1.5">
             <button type="button" onClick={() => setAdding(false)}
-              className="flex-1 py-1 text-[0.65rem] border border-[#e5e7eb] rounded hover:bg-white transition">Cancel</button>
+              className="flex-1 py-1 text-xs border border-[#e5e7eb] rounded hover:bg-white transition">Cancel</button>
             <button type="button" onClick={handleCreate} disabled={saving || !newTitle.trim()}
-              className="flex-1 py-1 text-[0.65rem] rounded btn-primary disabled:opacity-50 transition">
+              className="flex-1 py-1 text-xs rounded btn-primary disabled:opacity-50 transition">
               {saving ? 'Saving…' : 'Create'}
             </button>
           </div>
@@ -403,31 +407,31 @@ function ContactContracts({ contactId, contactName, contactEmail }: {
       )}
 
       {loading ? (
-        <p className="text-[0.65rem] text-[#9ca3af]">Loading…</p>
+        <p className="text-xs text-[#6b7280]">Loading…</p>
       ) : contracts.length === 0 ? (
-        <p className="text-[0.65rem] text-[#9ca3af] italic">No contracts yet.</p>
+        <p className="text-xs text-[#6b7280] italic">No contracts yet.</p>
       ) : (
         <div className="space-y-2">
           {contracts.map(c => (
             <div key={c._id} className="flex items-start gap-2 p-2.5 rounded-lg border border-[#e5e7eb] bg-[#f9fafb]">
-              <FileText className="w-3.5 h-3.5 text-[#9ca3af] shrink-0 mt-0.5" />
+              <FileText className="w-3.5 h-3.5 text-[#6b7280] shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-[#374151] truncate">{c.title}</p>
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[0.55rem] font-semibold ${CONTRACT_STATUS_PILL[c.status] ?? 'bg-gray-200 text-gray-600'}`}>
+                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[0.72rem] font-semibold ${CONTRACT_STATUS_PILL[c.status] ?? 'bg-gray-200 text-gray-600'}`}>
                     {c.status}
                   </span>
-                  <span className="text-[0.55rem] text-[#9ca3af] capitalize">{c.contractType}</span>
-                  {c.endDate && <span className="text-[0.55rem] text-[#9ca3af]">Exp: {new Date(c.endDate).toLocaleDateString()}</span>}
+                  <span className="text-[0.72rem] text-[#6b7280] capitalize">{c.contractType}</span>
+                  {c.endDate && <span className="text-[0.72rem] text-[#6b7280]">Exp: {new Date(c.endDate).toLocaleDateString()}</span>}
                 </div>
                 <div className="mt-1">
                   {c.pdfUrl ? (
                     <a href={c.pdfUrl} target="_blank" rel="noreferrer"
-                      className="text-[0.6rem] text-blue-600 hover:underline flex items-center gap-0.5">
+                      className="text-[0.72rem] text-blue-600 hover:underline flex items-center gap-0.5">
                       <ExternalLink className="w-2.5 h-2.5" /> View PDF
                     </a>
                   ) : (
-                    <label className={`text-[0.6rem] cursor-pointer flex items-center gap-0.5 ${uploadingId === c._id ? 'text-[#9ca3af]' : 'text-[#6b7280] hover:text-[#374151]'}`}>
+                    <label className={`text-[0.72rem] cursor-pointer flex items-center gap-0.5 ${uploadingId === c._id ? 'text-[#6b7280]' : 'text-[#6b7280] hover:text-[#374151]'}`}>
                       <Upload className="w-2.5 h-2.5" />
                       {uploadingId === c._id ? 'Uploading…' : 'Upload signed PDF'}
                       <input type="file" accept=".pdf" className="hidden" disabled={uploadingId === c._id}
@@ -441,6 +445,7 @@ function ContactContracts({ contactId, contactName, contactEmail }: {
         </div>
       )}
     </div>
+    </>
   );
 }
 
@@ -562,19 +567,19 @@ function ContactDrawer({ contact, onClose, onSave }: {
             <div className="min-w-0">
               <p className="text-sm font-semibold text-[#111827] truncate">{contact.name}</p>
               {contact.roles[0]?.accountNumber && (
-                <p className="text-[0.6rem] text-[#9ca3af] font-mono">{contact.roles[0].accountNumber}</p>
+                <p className="text-[0.72rem] text-[#6b7280] font-mono">{contact.roles[0].accountNumber}</p>
               )}
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <button type="button" title="Download contact card (.vcf)"
               onClick={() => downloadVCard(contact)}
-              className="text-[#9ca3af] hover:text-[#374151] transition p-1 rounded hover:bg-[#f3f4f6]"
+              className="text-[#6b7280] hover:text-[#374151] transition p-1 rounded hover:bg-[#f3f4f6]"
             >
               <Download className="w-3.5 h-3.5" />
             </button>
             <button type="button" title="Close" onClick={handleClose}
-              className="text-[#9ca3af] hover:text-[#374151] transition p-1 rounded hover:bg-[#f3f4f6]"
+              className="text-[#6b7280] hover:text-[#374151] transition p-1 rounded hover:bg-[#f3f4f6]"
             >
               <X className="w-4 h-4" />
             </button>
@@ -583,7 +588,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
 
 {/* Roles — one row per unique source type, merging duplicate services */}
         <div className="px-5 pt-4 space-y-1.5">
-          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Roles</p>
+          <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Roles</p>
           {Array.from(
             contact.roles.reduce((map, r) => {
               const existing = map.get(r.sourceType);
@@ -597,14 +602,14 @@ function ContactDrawer({ contact, onClose, onSave }: {
             .values()
           ).map(g => (
             <div key={g.sourceType} className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded-full text-[0.6rem] font-semibold uppercase tracking-wide shrink-0 ${SOURCE_COLORS[g.sourceType]}`}>
+              <span className={`px-2 py-0.5 rounded-full text-[0.72rem] font-semibold uppercase tracking-wide shrink-0 ${SOURCE_COLORS[g.sourceType]}`}>
                 {g.sourceType}
               </span>
               {g.services.length > 0 && (
                 <span className="text-xs text-[#6b7280] truncate">{g.services.join(', ')}</span>
               )}
               {g.accountNumber && (
-                <span className="text-[0.6rem] text-[#9ca3af] font-mono ml-auto shrink-0">{g.accountNumber}</span>
+                <span className="text-[0.72rem] text-[#6b7280] font-mono ml-auto shrink-0">{g.accountNumber}</span>
               )}
             </div>
           ))}
@@ -614,7 +619,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1 px-5 pt-2">
             {tags.map(t => (
-              <span key={t} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-medium bg-violet-100 text-violet-700">
+              <span key={t} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.72rem] font-medium bg-violet-100 text-violet-700">
                 {t}
                 <button type="button" onClick={() => toggleTag(t)} title={`Remove ${t}`} className="hover:text-violet-900 leading-none">×</button>
               </span>
@@ -624,11 +629,11 @@ function ContactDrawer({ contact, onClose, onSave }: {
 
 {/* Contact info */}
         <div className="px-5 pt-4 space-y-2.5">
-          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Contact Info</p>
+          <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Contact Info</p>
 
           {contact.phone ? (
             <a href={`tel:${contact.phone}`} className="flex items-center gap-2.5 text-sm text-[#374151] hover:text-[#111827] group">
-              <Phone className="w-3.5 h-3.5 text-[#9ca3af] shrink-0 group-hover:text-[#374151]" />
+              <Phone className="w-3.5 h-3.5 text-[#6b7280] shrink-0 group-hover:text-[#374151]" />
               {contact.phone}
             </a>
           ) : (
@@ -639,7 +644,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
 
           {contact.email ? (
             <a href={`mailto:${contact.email}`} className="flex items-center gap-2.5 text-sm text-[#374151] hover:text-[#111827] group break-all">
-              <Mail className="w-3.5 h-3.5 text-[#9ca3af] shrink-0 group-hover:text-[#374151]" />
+              <Mail className="w-3.5 h-3.5 text-[#6b7280] shrink-0 group-hover:text-[#374151]" />
               {contact.email}
             </a>
           ) : (
@@ -650,11 +655,11 @@ function ContactDrawer({ contact, onClose, onSave }: {
 
           {contact.address ? (
             <div className="flex items-start gap-2.5 text-sm text-[#374151]">
-              <MapPin className="w-3.5 h-3.5 text-[#9ca3af] mt-0.5 shrink-0" />
+              <MapPin className="w-3.5 h-3.5 text-[#6b7280] mt-0.5 shrink-0" />
               <div className="min-w-0">
                 <span className="whitespace-pre-line">{contact.address}</span>
                 <a href={mapsUrl(contact.address)} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[0.6rem] text-blue-500 hover:text-blue-700 mt-0.5 transition"
+                  className="flex items-center gap-1 text-[0.72rem] text-blue-500 hover:text-blue-700 mt-0.5 transition"
                 >
                   <ExternalLink className="w-2.5 h-2.5" /> Open in Google Maps
                 </a>
@@ -673,7 +678,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
 
 {/* Labels */}
         <div className="px-5 pt-5">
-          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af] mb-2 flex items-center gap-1.5">
+          <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280] mb-2 flex items-center gap-1.5">
             <Tag className="w-3 h-3" /> Labels
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -681,7 +686,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
               const on = tags.includes(t);
               return (
                 <button key={t} type="button" onClick={() => toggleTag(t)}
-                  className={`px-2 py-0.5 rounded-full border text-[0.65rem] font-medium transition ${
+                  className={`px-2 py-0.5 rounded-full border text-xs font-medium transition ${
                     on ? 'bg-violet-600 border-violet-600 text-white' : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f3f4f6]'
                   }`}
                 >
@@ -694,7 +699,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
 
 {/* Status */}
         <div className="px-5 pt-5">
-          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af] mb-2">Status</p>
+          <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280] mb-2">Status</p>
           <div className="flex gap-2 flex-wrap">
             {ALL_STATUSES.map(s => {
               const sc = STATUS_CONFIG[s];
@@ -709,7 +714,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
               );
             })}
           </div>
-          <p className="text-[0.6rem] text-[#9ca3af] mt-1.5">
+          <p className="text-[0.72rem] text-[#6b7280] mt-1.5">
             {status === 'inactive' && 'No longer in use — archived but not deleted.'}
             {status === 'on-hold'  && 'May be contacted again later if needed.'}
             {status === 'active'   && 'Currently active and available to contact.'}
@@ -718,7 +723,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
 
 {/* Notes */}
         <div className="px-5 pt-5 flex-1">
-          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af] mb-2">Notes</p>
+          <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280] mb-2">Notes</p>
           <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={4}
             placeholder="Add any notes about this contact…"
             className="w-full border border-[#e5e7eb] rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#374151] resize-none"
@@ -740,7 +745,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
             {contact.roles.map(r => (
               <a key={r.id}
                 href={`/admin/${r.sourceType === 'booking' ? '' : r.sourceType + 's'}`}
-                className="text-[0.65rem] text-[#9ca3af] hover:text-[#374151] transition"
+                className="text-xs text-[#6b7280] hover:text-[#374151] transition"
               >
                 View in {r.sourceType === 'booking' ? 'Bookings' : r.sourceType.charAt(0).toUpperCase() + r.sourceType.slice(1) + 's'} →
               </a>
@@ -767,6 +772,7 @@ function sortedContacts(list: Contact[], key: SortKey, dir: 'asc' | 'desc') {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ContactsTable() {
+  const { confirm, notify, dialog } = useAppDialog();
   const [contacts, setContacts]       = useState<Contact[]>([]);
   const [loading, setLoading]         = useState(true);
   const [fetchError, setFetchError]   = useState<string | null>(null);
@@ -847,6 +853,8 @@ export default function ContactsTable() {
 
   return (
     <>
+      {dialog}
+    <>
       {drawer && <ContactDrawer contact={drawer} onClose={closeDrawer} onSave={handleSave} />}
 
 {/* ── Sticky header: filters + search + A–Z ── */}
@@ -873,7 +881,7 @@ export default function ContactsTable() {
 {/* Search + source filter */}
         <div className="flex items-stretch gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b7280]" />
             <input ref={searchRef} type="text"
               placeholder="Search name, email, phone… (typos ok)"
               value={search}
@@ -882,7 +890,7 @@ export default function ContactsTable() {
             />
             {search && (
               <button type="button" onClick={() => setSearch('')} title="Clear search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#374151]"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#374151]"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -894,8 +902,8 @@ export default function ContactsTable() {
 {/* A–Z bar */}
         <div className="flex flex-wrap gap-0.5">
           <button type="button" onClick={() => setActiveLetter(null)}
-            className={`px-2 py-0.5 rounded text-[0.65rem] font-medium transition ${
-              activeLetter === null ? 'btn-primary' : 'text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6]'
+            className={`px-2 py-0.5 rounded text-xs font-medium transition ${
+              activeLetter === null ? 'btn-primary' : 'text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6]'
             }`}
           >All</button>
           {ALPHA.map(letter => {
@@ -903,7 +911,7 @@ export default function ContactsTable() {
             return (
               <button key={letter} type="button" disabled={!has}
                 onClick={() => { setActiveLetter(l => l === letter ? null : letter); setSearch(''); }}
-                className={`w-6 py-0.5 rounded text-[0.65rem] font-medium transition ${
+                className={`w-6 py-0.5 rounded text-xs font-medium transition ${
                   activeLetter === letter ? 'btn-primary'
                     : has ? 'text-[#374151] hover:bg-[#f3f4f6]' : 'text-[#d1d5db] cursor-default'
                 }`}
@@ -920,15 +928,15 @@ export default function ContactsTable() {
             <thead className="sticky top-0 z-10">
               <tr className="bg-[#f9fafb] border-b border-[#e5e7eb] dark:border-white/10">
                 <th className="text-left px-4 py-2.5">
-                  <button type="button" onClick={() => toggleSort('name')} className="flex items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af]">
+                  <button type="button" onClick={() => toggleSort('name')} className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
                     Name <SortIcon k="name" />
                   </button>
                 </th>
-                <th className="text-left px-4 py-2.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af]">Roles</th>
-                <th className="text-left px-4 py-2.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af]">Contact</th>
-                <th className="text-left px-4 py-2.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af]">Service / Dept</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Roles</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Contact</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Service / Dept</th>
                 <th className="text-left px-4 py-2.5">
-                  <button type="button" onClick={() => toggleSort('contactStatus')} className="flex items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af]">
+                  <button type="button" onClick={() => toggleSort('contactStatus')} className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
                     Status <SortIcon k="contactStatus" />
                   </button>
                 </th>
@@ -936,7 +944,7 @@ export default function ContactsTable() {
             </thead>
             <tbody className="divide-y divide-[#f3f4f6] dark:divide-white/4">
               {visible.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-12 text-sm text-[#9ca3af]">No contacts match your filters.</td></tr>
+                <tr><td colSpan={5} className="text-center py-12 text-sm text-[#6b7280]">No contacts match your filters.</td></tr>
               )}
               {visible.map(c => {
                 const dnc = c.tags?.includes('Do Not Contact');
@@ -954,9 +962,9 @@ export default function ContactsTable() {
                       <Avatar name={c.name || '?'} url={c.avatarUrl} />
                       <div className="min-w-0">
                         <p className={`text-xs font-medium truncate ${dnc ? 'text-red-600 dark:text-red-400 line-through' : 'text-[#111827]'}`}>{c.name || '—'}</p>
-                        {dnc && <p className="text-[0.6rem] font-medium text-red-500 dark:text-red-400">⛔ Do Not Contact</p>}
+                        {dnc && <p className="text-[0.72rem] font-medium text-red-500 dark:text-red-400">⛔ Do Not Contact</p>}
                         {c.roles[0]?.accountNumber && (
-                          <p className="text-[0.6rem] text-[#9ca3af] font-mono">{c.roles[0].accountNumber}</p>
+                          <p className="text-[0.72rem] text-[#6b7280] font-mono">{c.roles[0].accountNumber}</p>
                         )}
                       </div>
                     </div>
@@ -968,17 +976,17 @@ export default function ContactsTable() {
                     <div className="space-y-0.5">
                       {c.phone && (
                         <div className="flex items-center gap-1.5 text-xs text-[#374151]">
-                          <Phone className="w-3 h-3 text-[#9ca3af] shrink-0" /><span>{c.phone}</span>
+                          <Phone className="w-3 h-3 text-[#6b7280] shrink-0" /><span>{c.phone}</span>
                         </div>
                       )}
                       {c.email && (
                         <div className="flex items-center gap-1.5 text-xs text-[#374151] min-w-0">
-                          <Mail className="w-3 h-3 text-[#9ca3af] shrink-0" />
+                          <Mail className="w-3 h-3 text-[#6b7280] shrink-0" />
                           <span className="truncate max-w-40">{c.email}</span>
                         </div>
                       )}
                       {c.address && (
-                        <div className="flex items-center gap-1.5 text-xs text-[#9ca3af]">
+                        <div className="flex items-center gap-1.5 text-xs text-[#6b7280]">
                           <MapPin className="w-3 h-3 shrink-0" />
                           <span className="truncate max-w-40">{c.address}</span>
                         </div>
@@ -992,7 +1000,7 @@ export default function ContactsTable() {
                         <p key={r.id} className="text-xs text-[#6b7280] truncate">{r.service}</p>
                       ) : null)}
                       {c.contactPerson && (
-                        <p className="text-[0.6rem] text-[#9ca3af]">via {c.contactPerson}</p>
+                        <p className="text-[0.72rem] text-[#6b7280]">via {c.contactPerson}</p>
                       )}
                     </div>
                   </td>
@@ -1005,11 +1013,12 @@ export default function ContactsTable() {
           </table>
         </div>
         {visible.length > 0 && (
-          <div className="px-4 py-2 border-t border-[#e5e7eb] dark:border-white/10 text-[0.6rem] text-[#9ca3af]">
+          <div className="px-4 py-2 border-t border-[#e5e7eb] dark:border-white/10 text-[0.72rem] text-[#6b7280]">
             {visible.length} of {contacts.length} contacts
           </div>
         )}
       </div>
+    </>
     </>
   );
 }

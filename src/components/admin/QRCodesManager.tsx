@@ -1,5 +1,6 @@
 // src/components/admin/QRCodesManager.tsx
 import { useState, useEffect, useRef } from 'react';
+import { useAppDialog } from './useAppDialog';
 import { Plus, RefreshCw, Users, ChevronDown, ChevronUp, Download, Copy, Trash2, QrCode, Check, Search } from 'lucide-react';
 
 interface Booking {
@@ -33,6 +34,7 @@ interface RSVP {
 const BASE_URL = typeof window !== 'undefined' ? window.location.origin : '';
 
 export default function QRCodesManager() {
+  const { confirm, notify, dialog } = useAppDialog();
   const [qrCodes, setQrCodes] = useState<QREntry[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +82,7 @@ export default function QRCodesManager() {
 
   const handleGenerate = async () => {
     const match = availableBookings[0];
-    if (!match) { alert('No matching booking found. Try a different name.'); return; }
+    if (!match) { void notify('No matching booking found. Try a different name.'); return; }
     setGenerating(true);
     try {
       const res = await fetch('/api/admin/event-qr', {
@@ -89,7 +91,7 @@ export default function QRCodesManager() {
         body: JSON.stringify({ bookingId: match._id, deadline: deadline || match.eventDate }),
       });
       if (res.ok) { await fetchAll(); setBookingSearch(''); setDeadline(''); }
-      else { const d = await res.json(); alert(d.error); }
+      else { const d = await res.json(); void notify(d.error); }
     } finally { setGenerating(false); }
   };
 
@@ -109,7 +111,7 @@ export default function QRCodesManager() {
   };
 
   const deleteRsvp = async (token: string, id: string) => {
-    if (!confirm('Remove this RSVP?')) return;
+    if (!(await confirm('Remove this RSVP?', { danger: true, confirmLabel: 'Remove' }))) return;
     await fetch(`/api/admin/event-qr/${token}/rsvps`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -149,12 +151,14 @@ export default function QRCodesManager() {
     : '—';
 
   if (loading) return (
-    <div className="flex items-center justify-center py-12 text-[#9ca3af]">
+    <div className="flex items-center justify-center py-12 text-[#6b7280]">
       <RefreshCw className="w-4 h-4 animate-spin mr-2" /> Loading…
     </div>
   );
 
   return (
+    <>
+      {dialog}
     <div className="space-y-4">
 
       {/* Generate panel */}
@@ -162,7 +166,7 @@ export default function QRCodesManager() {
         <div className="flex items-center gap-2 flex-wrap">
           <QrCode className="w-4 h-4 text-[#6b7280] shrink-0" />
           <div className="relative flex-1 min-w-36">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b7280]" />
             <input
               type="text"
               placeholder="Search client name…"
@@ -172,7 +176,7 @@ export default function QRCodesManager() {
             />
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <label className="text-[0.6rem] text-[#9ca3af] uppercase tracking-wider whitespace-nowrap">RSVP Deadline</label>
+            <label className="text-[0.72rem] text-[#6b7280] uppercase tracking-wider whitespace-nowrap">RSVP Deadline</label>
             <input
               type="date"
               title="RSVP deadline"
@@ -191,15 +195,15 @@ export default function QRCodesManager() {
             {generating ? 'Generating…' : 'Generate QR'}
           </button>
         </div>
-        <p className="text-[0.65rem] text-[#9ca3af] mt-2">Deadline defaults to the event date if not set. Guests cannot RSVP after the deadline.</p>
+        <p className="text-xs text-[#6b7280] mt-2">Deadline defaults to the event date if not set. Guests cannot RSVP after the deadline.</p>
         {availableBookings.length === 0 && bookings.length > 0 && (
-          <p className="text-xs text-[#9ca3af] mt-1">All bookings already have a QR code.</p>
+          <p className="text-xs text-[#6b7280] mt-1">All bookings already have a QR code.</p>
         )}
       </div>
 
       {/* QR list */}
       {qrCodes.length === 0 ? (
-        <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm py-12 text-center text-[#9ca3af]">
+        <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-sm py-12 text-center text-[#6b7280]">
           <QrCode className="w-10 h-10 mx-auto mb-2 text-[#e5e7eb]" />
           <p className="text-xs">No QR codes yet. Generate one above for a booking.</p>
         </div>
@@ -227,11 +231,11 @@ export default function QRCodesManager() {
                     />
                     <div className="flex gap-1 mt-1.5">
                       <button onClick={() => downloadQR(qr.token, qr.booking?.clientName || 'event')}
-                        className="flex-1 h-7 flex items-center justify-center gap-1 border border-[#e5e7eb] rounded text-[0.6rem] text-[#6b7280] hover:bg-[#f3f4f6] transition">
+                        className="flex-1 h-7 flex items-center justify-center gap-1 border border-[#e5e7eb] rounded text-[0.72rem] text-[#6b7280] hover:bg-[#f3f4f6] transition">
                         <Download className="w-3 h-3" /> Download
                       </button>
                       <button onClick={() => copyLink(qr.token)}
-                        className="flex-1 h-7 flex items-center justify-center gap-1 border border-[#e5e7eb] rounded text-[0.6rem] text-[#6b7280] hover:bg-[#f3f4f6] transition">
+                        className="flex-1 h-7 flex items-center justify-center gap-1 border border-[#e5e7eb] rounded text-[0.72rem] text-[#6b7280] hover:bg-[#f3f4f6] transition">
                         {copied === qr.token ? <><Check className="w-3 h-3 text-emerald-600" /> Copied</> : <><Copy className="w-3 h-3" /> Copy Link</>}
                       </button>
                     </div>
@@ -244,14 +248,14 @@ export default function QRCodesManager() {
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-[#111827]">{qr.booking?.clientName || 'Unknown Booking'}</p>
                           {isExpired
-                            ? <span className="px-1.5 py-0.5 rounded text-[0.6rem] font-semibold bg-red-50 text-red-600 border border-red-200">Expired</span>
-                            : deadlineLabel && <span className="px-1.5 py-0.5 rounded text-[0.6rem] font-medium bg-[#f3f4f6] text-[#6b7280]">Deadline {deadlineLabel}</span>
+                            ? <span className="px-1.5 py-0.5 rounded text-[0.72rem] font-semibold bg-red-50 text-red-600 border border-red-200">Expired</span>
+                            : deadlineLabel && <span className="px-1.5 py-0.5 rounded text-[0.72rem] font-medium bg-[#f3f4f6] text-[#6b7280]">Deadline {deadlineLabel}</span>
                           }
                         </div>
                         <p className="text-xs text-[#6b7280] mt-0.5">
                           {qr.booking?.eventType && <span className="capitalize">{qr.booking.eventType} · </span>}
                           {formatDate(qr.booking?.eventDate || '')}
-                          {qr.booking?.accountNumber && <span className="text-[#9ca3af]"> · #{qr.booking.accountNumber}</span>}
+                          {qr.booking?.accountNumber && <span className="text-[#6b7280]"> · #{qr.booking.accountNumber}</span>}
                         </p>
                       </div>
                     </div>
@@ -260,26 +264,26 @@ export default function QRCodesManager() {
                     <div className="flex gap-4 mt-3">
                       <div className="text-center">
                         <p className="text-xl font-bold text-[#111827]">{qr.total_guests}</p>
-                        <p className="text-[0.6rem] text-[#9ca3af] uppercase tracking-wider">Total Guests</p>
+                        <p className="text-[0.72rem] text-[#6b7280] uppercase tracking-wider">Total Guests</p>
                       </div>
                       <div className="text-center">
                         <p className="text-xl font-bold text-[#111827]">{qr.rsvp_count}</p>
-                        <p className="text-[0.6rem] text-[#9ca3af] uppercase tracking-wider">RSVPs</p>
+                        <p className="text-[0.72rem] text-[#6b7280] uppercase tracking-wider">RSVPs</p>
                       </div>
                       {qr.booking?.guestCount && (
                         <div className="text-center">
                           <p className={`text-xl font-bold ${qr.total_guests > qr.booking.guestCount ? 'text-red-600' : 'text-emerald-600'}`}>
                             {qr.booking.guestCount}
                           </p>
-                          <p className="text-[0.6rem] text-[#9ca3af] uppercase tracking-wider">Expected</p>
+                          <p className="text-[0.72rem] text-[#6b7280] uppercase tracking-wider">Expected</p>
                         </div>
                       )}
                     </div>
 
                     {/* RSVP link */}
                     <div className="mt-3 flex items-center gap-2">
-                      <span className="text-[0.6rem] text-[#9ca3af] uppercase tracking-wider">RSVP Link</span>
-                      <code className="text-[0.65rem] text-[#374151] bg-[#f3f4f6] px-2 py-0.5 rounded truncate max-w-xs">{rsvpUrl}</code>
+                      <span className="text-[0.72rem] text-[#6b7280] uppercase tracking-wider">RSVP Link</span>
+                      <code className="text-xs text-[#374151] bg-[#f3f4f6] px-2 py-0.5 rounded truncate max-w-xs">{rsvpUrl}</code>
                     </div>
 
                     {/* Guest list toggle */}
@@ -298,37 +302,37 @@ export default function QRCodesManager() {
                 {isOpen && (
                   <div className="border-t border-[#e5e7eb]">
                     {rsvpList.length === 0 ? (
-                      <div className="px-4 py-6 text-center text-xs text-[#9ca3af]">No RSVPs yet — share the QR code or link with guests.</div>
+                      <div className="px-4 py-6 text-center text-xs text-[#6b7280]">No RSVPs yet — share the QR code or link with guests.</div>
                     ) : (
                       <>
                         <div className="px-4 py-2 bg-[#f9fafb] flex items-center justify-between">
-                          <span className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Guest List</span>
-                          <span className="text-[0.6rem] text-[#9ca3af]">{qr.total_guests} people total</span>
+                          <span className="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Guest List</span>
+                          <span className="text-[0.72rem] text-[#6b7280]">{qr.total_guests} people total</span>
                         </div>
                         <table className="w-full">
                           <thead>
                             <tr className="border-b border-[#f3f4f6]">
                               {['Name', 'Party Size', 'Notes', 'Submitted', ''].map(h => (
-                                <th key={h} className="text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">{h}</th>
+                                <th key={h} className="text-left px-4 py-3 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">{h}</th>
                               ))}
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-[#e5e7eb]">
                             {rsvpList.map(r => (
                               <tr key={r.id} className="hover:bg-[#fafafa]">
-                                <td className="px-3 py-2 text-xs font-medium text-[#111827]">{r.guest_name}</td>
-                                <td className="px-3 py-2">
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                <td className="px-4 py-3 text-xs font-medium text-[#111827]">{r.guest_name}</td>
+                                <td className="px-4 py-3">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.72rem] font-medium bg-blue-50 text-blue-700 border border-blue-200">
                                     {r.party_size} {r.party_size === 1 ? 'person' : 'people'}
                                   </span>
                                 </td>
-                                <td className="px-3 py-2 text-xs text-[#6b7280]">{r.notes || '—'}</td>
-                                <td className="px-3 py-2 text-xs text-[#9ca3af]">
+                                <td className="px-4 py-3 text-xs text-[#6b7280]">{r.notes || '—'}</td>
+                                <td className="px-4 py-3 text-xs text-[#6b7280]">
                                   {new Date(r.submitted_at * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td className="px-4 py-3">
                                   <button onClick={() => deleteRsvp(qr.token, r.id)}
-                                    className="p-1 text-[#9ca3af] hover:text-red-500 hover:bg-red-50 rounded transition">
+                                    className="p-1 text-[#6b7280] hover:text-red-500 hover:bg-red-50 rounded transition">
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </td>
@@ -346,5 +350,6 @@ export default function QRCodesManager() {
         </div>
       )}
     </div>
+    </>
   );
 }

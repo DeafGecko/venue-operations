@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { FileText, Plus, Upload, Pencil, Trash2, X, Check, ExternalLink, AlertTriangle, Clock, CheckCircle, XCircle, FileSignature, Search, Paperclip, Image, ChevronDown, ChevronUp } from 'lucide-react';
+import { useAppDialog } from './useAppDialog';
+import { FileText, Plus, Upload, Edit, Trash2, X, Check, ExternalLink, AlertTriangle, Clock, CheckCircle, XCircle, FileSignature, Search, Paperclip, Image, ChevronDown, ChevronUp } from 'lucide-react';
 
 type ContractType   = 'rental' | 'vendor' | 'lease' | 'custom';
 type ContractStatus = 'draft' | 'sent' | 'signed' | 'expired' | 'cancelled';
@@ -44,7 +45,7 @@ const ALL_TYPES:    ContractType[]   = ['rental', 'vendor', 'lease', 'custom'];
 function StatusPill({ status }: { status: ContractStatus }) {
   const cfg = STATUS_CONFIG[status];
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] font-semibold ${cfg.color}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.72rem] font-semibold ${cfg.color}`}>
       {cfg.icon} {cfg.label}
     </span>
   );
@@ -56,6 +57,7 @@ function AttachmentsPanel({ contractId, attachments, onRefresh }: {
   attachments: Contract['attachments'];
   onRefresh:   () => void;
 }) {
+  const { confirm, notify, dialog } = useAppDialog();
   const [uploading, setUploading] = useState(false);
   const [label, setLabel]         = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -70,12 +72,12 @@ function AttachmentsPanel({ contractId, attachments, onRefresh }: {
       if (!res.ok) throw new Error('Upload failed');
       setLabel('');
       onRefresh();
-    } catch (e: any) { alert(e.message); }
+    } catch (e: any) { void notify(e.message); }
     finally { setUploading(false); }
   };
 
   const handleRemove = async (index: number) => {
-    if (!confirm('Remove this attachment?')) return;
+    if (!(await confirm('Remove this attachment?', { danger: true, confirmLabel: 'Remove' }))) return;
     await fetch(`/api/admin/contracts/${contractId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -87,15 +89,17 @@ function AttachmentsPanel({ contractId, attachments, onRefresh }: {
   const list = attachments ?? [];
 
   return (
+    <>
+      {dialog}
     <div className="px-4 pb-4 pt-1">
       <div className="rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-3 space-y-2">
-        <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af] flex items-center gap-1">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280] flex items-center gap-1">
           <Paperclip className="w-3 h-3" /> Attachments
         </p>
 
         {/* File list */}
         {list.length === 0 ? (
-          <p className="text-[0.65rem] text-[#9ca3af] italic">No attachments yet.</p>
+          <p className="text-xs text-[#6b7280] italic">No attachments yet.</p>
         ) : (
           <div className="space-y-1.5">
             {list.map((a, i) => (
@@ -106,7 +110,7 @@ function AttachmentsPanel({ contractId, attachments, onRefresh }: {
                 }
                 <span className="text-xs text-[#374151] flex-1 truncate">{a.label || a.filename}</span>
                 <a href={a.url} target="_blank" rel="noreferrer"
-                  className="text-[0.6rem] text-blue-600 hover:underline shrink-0 flex items-center gap-0.5">
+                  className="text-[0.72rem] text-blue-600 hover:underline shrink-0 flex items-center gap-0.5">
                   <ExternalLink className="w-2.5 h-2.5" /> Open
                 </a>
                 <button type="button" title="Remove attachment" onClick={() => handleRemove(i)}
@@ -123,8 +127,8 @@ function AttachmentsPanel({ contractId, attachments, onRefresh }: {
           <input value={label} onChange={e => setLabel(e.target.value)}
             placeholder="Label (optional)"
             className="flex-1 h-7 border border-[#e5e7eb] rounded px-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white" />
-          <label className={`h-7 flex items-center gap-1 px-3 rounded-md text-[0.65rem] font-medium cursor-pointer transition ${
-            uploading ? 'bg-[#e5e7eb] text-[#9ca3af]' : 'btn-primary'
+          <label className={`h-7 flex items-center gap-1 px-3 rounded-md text-xs font-medium cursor-pointer transition ${
+            uploading ? 'bg-[#e5e7eb] text-[#6b7280]' : 'btn-primary'
           }`}>
             <Upload className="w-3 h-3" />
             {uploading ? 'Uploading…' : 'Add File'}
@@ -133,9 +137,10 @@ function AttachmentsPanel({ contractId, attachments, onRefresh }: {
               onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = ''; }} />
           </label>
         </div>
-        <p className="text-[0.55rem] text-[#9ca3af]">Accepts PDF, JPG, PNG, GIF, WEBP</p>
+        <p className="text-[0.72rem] text-[#6b7280]">Accepts PDF, JPG, PNG, GIF, WEBP</p>
       </div>
     </div>
+    </>
   );
 }
 
@@ -156,6 +161,7 @@ function ContractFormModal({ initial, onSave, onClose }: {
   onSave:   (data: Partial<Contract>, files: File[]) => Promise<void>;
   onClose:  () => void;
 }) {
+  const { confirm, notify, dialog } = useAppDialog();
   const [form, setForm] = useState<Partial<Contract>>({
     title: '', contractType: 'rental', status: 'draft',
     notes: '', startDate: '', endDate: '',
@@ -164,6 +170,18 @@ function ContractFormModal({ initial, onSave, onClose }: {
     ...initial,
   });
   const [saving, setSaving]     = useState(false);
+  // Contacts come from the same Clients list used elsewhere in the app, so names and emails match.
+  const [clients, setClients]   = useState<{ _id: string; name: string; email?: string }[]>([]);
+  useEffect(() => {
+    fetch('/api/admin/clients')
+      .then(r => (r.ok ? r.json() : []))
+      .then((list: any[]) => setClients(list.map(c => ({ _id: c._id, name: c.name, email: c.email }))))
+      .catch(() => setClients([]));
+  }, []);
+  const pickClient = (id: string) => {
+    const c = clients.find(x => x._id === id);
+    setForm(f => ({ ...f, contactId: id, contactName: c?.name ?? '', contactEmail: c?.email ?? '' }));
+  };
   const [files, setFiles]       = useState<File[]>([]);
   const [dragging, setDragging] = useState(false);
 
@@ -181,15 +199,17 @@ function ContractFormModal({ initial, onSave, onClose }: {
   };
 
   const handleSave = async () => {
-    if (!form.title?.trim()) { alert('Title is required.'); return; }
-    if (!form.contactName?.trim()) { alert('Contact name is required.'); return; }
+    if (!form.title?.trim()) { void notify('Title is required.'); return; }
+    if (!form.contactName?.trim()) { void notify('Contact name is required.'); return; }
     setSaving(true);
     try { await onSave(form, files); onClose(); }
-    catch (e: any) { alert(e.message); }
+    catch (e: any) { void notify(e.message); }
     finally { setSaving(false); }
   };
 
   return (
+    <>
+      {dialog}
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden max-h-[90vh]"
         onClick={e => e.stopPropagation()}>
@@ -197,41 +217,42 @@ function ContractFormModal({ initial, onSave, onClose }: {
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[#e5e7eb] shrink-0">
           <p className="text-sm font-semibold text-[#111827]">{initial?._id ? 'Edit Contract' : 'New Contract'}</p>
-          <button type="button" onClick={onClose} className="text-[#9ca3af] hover:text-[#374151] text-lg">&times;</button>
+          <button type="button" onClick={onClose} className="text-[#6b7280] hover:text-[#374151] text-lg">&times;</button>
         </div>
 
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Contract Title *</label>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-[#6b7280] mb-1">Contract Title *</label>
               <input value={form.title ?? ''} onChange={e => set('title', e.target.value)}
                 placeholder="e.g. Vendor Agreement 2026"
                 className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
             </div>
 
             <div>
-              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Contact Name *</label>
-              <input value={form.contactName ?? ''} onChange={e => set('contactName', e.target.value)}
-                placeholder="Full name"
-                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
-            </div>
-            <div>
-              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Contact Email</label>
-              <input value={form.contactEmail ?? ''} onChange={e => set('contactEmail', e.target.value)}
-                placeholder="email@example.com" type="email"
-                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+              <label htmlFor="contract-client" className="block text-xs font-semibold uppercase tracking-wide text-[#6b7280] mb-1">Client *</label>
+              <select id="contract-client" value={form.contactId ?? ''} onChange={e => pickClient(e.target.value)}
+                className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#374151]">
+                <option value="">Choose a client</option>
+                {clients.map(c => (
+                  <option key={c._id} value={c._id}>{c.name}{c.email ? ` · ${c.email}` : ''}</option>
+                ))}
+              </select>
+              {form.contactEmail && (
+                <p className="mt-1 text-xs text-[#6b7280]">{form.contactName} · {form.contactEmail}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Type</label>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-[#6b7280] mb-1">Type</label>
               <select value={form.contractType} onChange={e => set('contractType', e.target.value as ContractType)} title="Contract type"
                 className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]">
                 {ALL_TYPES.map(t => <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Status</label>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-[#6b7280] mb-1">Status</label>
               <select value={form.status} onChange={e => set('status', e.target.value as ContractStatus)} title="Contract status"
                 className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]">
                 {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>)}
@@ -239,12 +260,12 @@ function ContractFormModal({ initial, onSave, onClose }: {
             </div>
 
             <div>
-              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Start Date</label>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-[#6b7280] mb-1">Start Date</label>
               <input type="date" title="Start date" value={form.startDate ?? ''} onChange={e => set('startDate', e.target.value)}
                 className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
             </div>
             <div>
-              <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">End / Expiry Date</label>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-[#6b7280] mb-1">End / Expiry Date</label>
               <input type="date" title="End / expiry date" value={form.endDate ?? ''} onChange={e => set('endDate', e.target.value)}
                 className="w-full h-9 border border-[#e5e7eb] rounded-md px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
             </div>
@@ -253,14 +274,14 @@ function ContractFormModal({ initial, onSave, onClose }: {
 
           {/* Drag-and-drop zone */}
           <div>
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1.5">
-              Attachments <span className="normal-case font-normal text-[#9ca3af]">(optional — PDF, JPG, PNG)</span>
+            <label className="block text-xs font-semibold uppercase tracking-wide text-[#6b7280] mb-1.5">
+              Attachments <span className="normal-case font-normal text-[#6b7280]">(optional — PDF, JPG, PNG)</span>
             </label>
             <div
               onDragOver={e => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); }}
-              className={`border-2 border-dashed rounded-lg px-4 py-6 text-center transition-colors ${
+              className={`border border-dashed rounded-lg px-4 py-6 text-center transition-colors ${
                 dragging ? 'border-(--admin-primary) bg-blue-50/40' : 'border-[#e5e7eb] hover:border-[#d1d5db]'
               }`}
             >
@@ -273,7 +294,7 @@ function ContractFormModal({ initial, onSave, onClose }: {
                     onChange={e => { addFiles(e.target.files); e.target.value = ''; }} />
                 </label>
               </p>
-              <p className="text-[0.6rem] text-[#9ca3af] mt-1">PDF · JPG · PNG · GIF · WEBP</p>
+              <p className="text-[0.72rem] text-[#6b7280] mt-1">PDF · JPG · PNG · GIF · WEBP</p>
             </div>
 
             {files.length > 0 && (
@@ -284,7 +305,7 @@ function ContractFormModal({ initial, onSave, onClose }: {
                       ? <Image className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                       : <FileText className="w-3.5 h-3.5 text-red-400 shrink-0" />}
                     <span className="flex-1 truncate">{f.name}</span>
-                    <span className="text-[#9ca3af] shrink-0">{(f.size / 1024).toFixed(0)} KB</span>
+                    <span className="text-[#6b7280] shrink-0">{(f.size / 1024).toFixed(0)} KB</span>
                     <button type="button" title="Remove" onClick={() => setFiles(p => p.filter((_, j) => j !== i))}
                       className="text-[#d1d5db] hover:text-red-400 transition shrink-0">
                       <X className="w-3 h-3" />
@@ -297,7 +318,7 @@ function ContractFormModal({ initial, onSave, onClose }: {
 
           {/* Notes — below the drop zone */}
           <div>
-            <label className="block text-[0.65rem] font-semibold uppercase tracking-wide text-[#9ca3af] mb-1">Notes</label>
+            <label className="block text-xs font-semibold uppercase tracking-wide text-[#6b7280] mb-1">Notes</label>
             <textarea value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} rows={2} title="Notes"
               className="w-full border border-[#e5e7eb] rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#374151]" />
           </div>
@@ -314,11 +335,13 @@ function ContractFormModal({ initial, onSave, onClose }: {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function ContractsTable() {
+  const { confirm, notify, dialog } = useAppDialog();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading]     = useState(true);
   const [search, setSearch]       = useState('');
@@ -387,7 +410,7 @@ export default function ContractsTable() {
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Delete contract "${title}"? This cannot be undone.`)) return;
+    if (!(await confirm(`Delete contract "${title}"? This cannot be undone.`, { danger: true, confirmLabel: 'Delete' }))) return;
     await fetch(`/api/admin/contracts/${id}`, { method: 'DELETE' });
     await load();
   };
@@ -404,7 +427,7 @@ export default function ContractsTable() {
         throw new Error(body.error ?? 'Upload failed');
       }
       await load();
-    } catch (e: any) { alert(e.message); }
+    } catch (e: any) { void notify(e.message); }
     finally { setUploadingId(null); }
   };
 
@@ -416,9 +439,11 @@ export default function ContractsTable() {
 
   const expiringSoon = contracts.filter(c => isExpiringSoon(c.endDate) && c.status === 'signed').length;
 
-  if (loading) return <div className="text-center py-16 text-sm text-[#9ca3af]">Loading contracts…</div>;
+  if (loading) return <div className="text-center py-16 text-sm text-[#6b7280]">Loading contracts…</div>;
 
   return (
+    <>
+      {dialog}
     <div className="space-y-4">
 
       {/* Expiry warning banner */}
@@ -433,7 +458,7 @@ export default function ContractsTable() {
       <div className="flex flex-wrap items-center gap-2">
         {(['all', ...ALL_STATUSES] as const).map(s => (
           <button key={s} type="button" onClick={() => setFilterStatus(s)}
-            className={`h-7 px-3 rounded-full text-[0.65rem] font-semibold transition ${
+            className={`h-7 px-3 rounded-full text-xs font-semibold transition ${
               filterStatus === s ? 'btn-primary' : 'bg-white border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
             }`}>
             {s === 'all' ? 'All' : STATUS_CONFIG[s].label} <span className="ml-1 opacity-70">{statusCounts[s] ?? 0}</span>
@@ -444,7 +469,7 @@ export default function ContractsTable() {
       {/* Search + type filter + add */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-48">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b7280]" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search title or contact…"
             className="w-full h-9 pl-8 pr-3 border border-[#e5e7eb] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] bg-white" />
@@ -466,45 +491,45 @@ export default function ContractsTable() {
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-10">
               <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
-                <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Title</th>
-                <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Contact</th>
-                <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Type</th>
-                <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Status</th>
-                <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Dates</th>
-                <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">PDF</th>
-                <th className="text-left px-4 py-2.5 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Actions</th>
+                <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Title</th>
+                <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Contact</th>
+                <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Type</th>
+                <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Status</th>
+                <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Dates</th>
+                <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">PDF</th>
+                <th className="text-left px-4 py-2.5 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#f3f4f6] dark:divide-white/4">
               {visible.length === 0 ? (
                 <tr><td colSpan={7} className="py-16 text-center">
                   <FileSignature className="w-8 h-8 mx-auto mb-2 text-[#d1d5db]" />
-                  <p className="text-xs text-[#9ca3af]">No contracts found.</p>
+                  <p className="text-xs text-[#6b7280]">No contracts found.</p>
                 </td></tr>
               ) : visible.map(c => {
                 const expiring = isExpiringSoon(c.endDate) && c.status === 'signed';
                 const expired  = isExpired(c.endDate, c.status);
                 return (
                   <>
-                  <tr key={c._id} className={`bg-white hover:bg-[#fafafa] transition ${expiring ? 'border-l-2 border-amber-400' : ''} ${expired ? 'opacity-60' : ''}`}>
+                  <tr key={c._id} className={`bg-white hover:bg-[#fafafa] transition ${expiring ? 'bg-amber-50/40' : ''} ${expired ? 'opacity-60' : ''}`}>
                     <td className="px-4 py-3">
                       <p className="text-sm font-medium text-[#111827]">{c.title}</p>
-                      {c.notes && <p className="text-[0.65rem] text-[#9ca3af] mt-0.5 truncate max-w-[180px]">{c.notes}</p>}
+                      {c.notes && <p className="text-xs text-[#6b7280] mt-0.5 truncate max-w-[180px]">{c.notes}</p>}
                     </td>
                     <td className="px-4 py-3">
                       <p className="text-sm text-[#374151]">{c.contactName || '—'}</p>
-                      {c.contactEmail && <p className="text-[0.65rem] text-[#9ca3af]">{c.contactEmail}</p>}
+                      {c.contactEmail && <p className="text-xs text-[#6b7280]">{c.contactEmail}</p>}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.6rem] font-semibold ${TYPE_CONFIG[c.contractType]?.color}`}>
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.72rem] font-semibold ${TYPE_CONFIG[c.contractType]?.color}`}>
                         {TYPE_CONFIG[c.contractType]?.label}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <StatusPill status={c.status} />
-                      {expiring && <p className="text-[0.55rem] text-amber-600 mt-0.5 font-medium">Expiring soon</p>}
+                      {expiring && <p className="text-[0.72rem] text-amber-600 mt-0.5 font-medium">Expiring soon</p>}
                     </td>
-                    <td className="px-4 py-3 text-[0.65rem] text-[#6b7280] space-y-0.5">
+                    <td className="px-4 py-3 text-xs text-[#6b7280] space-y-0.5">
                       {c.startDate && <p>Start: {new Date(c.startDate).toLocaleDateString()}</p>}
                       {c.endDate   && <p className={expired ? 'text-red-500 font-medium' : ''}>End: {new Date(c.endDate).toLocaleDateString()}</p>}
                       {c.signedAt  && <p className="text-emerald-600">Signed: {new Date(c.signedAt).toLocaleDateString()}</p>}
@@ -512,12 +537,12 @@ export default function ContractsTable() {
                     <td className="px-4 py-3">
                       {c.pdfUrl ? (
                         <a href={c.pdfUrl} target="_blank" rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[0.65rem] text-blue-600 hover:underline">
+                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
                           <ExternalLink className="w-3 h-3" /> View PDF
                         </a>
                       ) : (
-                        <label className={`inline-flex items-center gap-1 text-[0.65rem] cursor-pointer transition ${
-                          uploadingId === c._id ? 'text-[#9ca3af]' : 'text-[#6b7280] hover:text-[#374151]'
+                        <label className={`inline-flex items-center gap-1 text-xs cursor-pointer transition ${
+                          uploadingId === c._id ? 'text-[#6b7280]' : 'text-[#6b7280] hover:text-[#374151]'
                         }`}>
                           <Upload className="w-3 h-3" />
                           {uploadingId === c._id ? 'Uploading…' : 'Upload PDF'}
@@ -530,20 +555,20 @@ export default function ContractsTable() {
                       <div className="flex items-center gap-1">
                         <button type="button" title="Attachments"
                           onClick={() => setExpandedId(expandedId === c._id ? null : c._id)}
-                          className={`p-1.5 rounded-md transition relative ${expandedId === c._id ? 'text-[#374151] bg-[#f3f4f6]' : 'text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6]'}`}>
+                          className={`p-1.5 rounded-md transition relative ${expandedId === c._id ? 'text-[#374151] bg-[#f3f4f6]' : 'text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6]'}`}>
                           <Paperclip className="w-3.5 h-3.5" />
                           {(c.attachments?.length ?? 0) > 0 && (
-                            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-(--admin-primary) text-white text-[0.45rem] font-bold flex items-center justify-center">
+                            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-(--admin-primary) text-white text-[0.72rem] font-bold flex items-center justify-center">
                               {c.attachments!.length}
                             </span>
                           )}
                         </button>
                         <button type="button" title="Edit" onClick={() => { setEditing(c); setShowModal(true); }}
-                          className="p-1.5 rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
-                          <Pencil className="w-3.5 h-3.5" />
+                          className="p-1.5 rounded-md text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
+                          <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button type="button" title="Delete" onClick={() => handleDelete(c._id, c.title)}
-                          className="p-1.5 rounded-md text-[#9ca3af] hover:text-red-500 hover:bg-red-50 transition">
+                          className="p-1.5 rounded-md text-[#6b7280] hover:text-red-500 hover:bg-red-50 transition">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -566,7 +591,7 @@ export default function ContractsTable() {
             </tbody>
           </table>
         </div>
-        <div className="px-4 py-2.5 border-t border-[#e5e7eb] bg-[#f9fafb] text-xs text-[#9ca3af] flex items-center justify-between">
+        <div className="px-4 py-2.5 border-t border-[#e5e7eb] bg-[#f9fafb] text-xs text-[#6b7280] flex items-center justify-between">
           <span>{visible.length} of {contracts.length} contract{contracts.length !== 1 ? 's' : ''}</span>
           <span>{contracts.filter(c => c.status === 'signed').length} signed · {contracts.filter(c => c.status === 'draft').length} draft</span>
         </div>
@@ -581,5 +606,6 @@ export default function ContractsTable() {
         />
       )}
     </div>
+    </>
   );
 }

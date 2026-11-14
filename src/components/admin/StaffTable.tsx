@@ -1,6 +1,6 @@
 // src/components/admin/StaffTable.tsx
 import { useState } from 'react';
-import { Plus, X, Search, Pencil, Trash2, RefreshCw, Phone, Mail } from 'lucide-react';
+import { Plus, X, Search, Edit, Trash2, RefreshCw, Phone, Mail } from 'lucide-react';
 import CustomSelect from './CustomSelect';
 
 interface StaffMember {
@@ -31,7 +31,7 @@ const empty = (): Omit<StaffMember, '_id'> => ({
 });
 
 const Label = ({ children }: { children: React.ReactNode }) => (
-  <span className="block text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af] mb-0.5">{children}</span>
+  <span className="block text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280] mb-0.5">{children}</span>
 );
 const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input {...p} className={`w-full border border-[#e5e7eb] rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151] ${p.className ?? ''}`} />
@@ -141,7 +141,7 @@ export default function StaffTable() {
         {/* Toolbar */}
         <div className="px-3 py-2 border-b border-[#e5e7eb] flex items-center gap-2 flex-wrap shrink-0">
           <div className="relative flex-1 min-w-36">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9ca3af]" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6b7280]" />
             <input type="search" placeholder="Search name, email, department…" value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full h-8 pl-8 pr-3 border border-[#e5e7eb] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
@@ -167,7 +167,7 @@ export default function StaffTable() {
         <div className="px-4 py-1.5 flex items-center gap-4 text-xs shrink-0" style={{ borderBottom: '1px solid var(--admin-border)' }}>
           <span className="text-emerald-600 font-medium">{counts.active} active</span>
           <span className="text-amber-600 font-medium">{counts['on-call']} on-call</span>
-          <span className="text-[#9ca3af]">{counts.inactive} inactive</span>
+          <span className="text-[#6b7280]">{counts.inactive} inactive</span>
         </div>
 
         {error && <div className="px-4 py-2 bg-red-50 text-red-700 text-xs border-b border-red-200">{error}</div>}
@@ -178,7 +178,7 @@ export default function StaffTable() {
             <thead className="sticky top-0 z-10">
               <tr className="bg-[#f9fafb]" style={{ borderBottom: '1px solid var(--admin-border)' }}>
                 {['Account #', 'Name', 'Role', 'Department', 'Contact', 'Schedule', 'Shift', 'Status', 'Actions'].map(h => (
-                  <th key={h} className={`text-left px-3 py-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#9ca3af]
+                  <th key={h} className={`text-left px-4 py-3 text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]
                     ${h === 'Department' ? 'hidden lg:table-cell' : ''}
                     ${h === 'Shift' ? 'hidden md:table-cell' : ''}`}>{h}</th>
                 ))}
@@ -186,49 +186,49 @@ export default function StaffTable() {
             </thead>
             <tbody className="divide-y divide-[#e5e7eb]">
               {filtered.length === 0 ? (
-                <tr><td colSpan={9} className="py-12 text-center text-xs text-[#9ca3af]">No staff found. Add your first staff member.</td></tr>
+                <tr><td colSpan={9} className="py-12 text-center text-xs text-[#6b7280]">No staff found. Add your first staff member.</td></tr>
               ) : filtered.map(s => (
                 <tr key={s._id} className="hover:bg-[#fafafa] transition">
-                  <td className="px-3 py-2 font-mono text-xs text-[#6b7280]">{s.accountNumber || <span className="text-amber-400 italic">—</span>}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{s.accountNumber || <span className="text-amber-400 italic">—</span>}</td>
+                  <td className="px-4 py-3">
                     <p className="text-sm font-medium text-[#111827] leading-tight">{s.name}</p>
-                    {s.startDate && <p className="text-[0.6rem] text-[#9ca3af]">Since {new Date(s.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>}
+                    {s.startDate && <p className="text-[0.72rem] text-[#6b7280]">Since {new Date(s.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>}
                   </td>
-                  <td className="px-3 py-2">
-                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium capitalize ${roleStyle[s.role || ''] ?? 'bg-[#6b7280] text-white'}`}>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.72rem] font-medium capitalize ${roleStyle[s.role || ''] ?? 'bg-[#6b7280] text-white'}`}>
                       {s.role || '—'}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs text-[#6b7280] hidden lg:table-cell">{s.department || '—'}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3 text-xs text-[#6b7280] hidden lg:table-cell">{s.department || '—'}</td>
+                  <td className="px-4 py-3">
                     <div className="space-y-0.5">
                       {s.email && <a href={`mailto:${s.email}`} className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#374151]"><Mail className="w-3 h-3" />{s.email}</a>}
                       {s.phone && <a href={`tel:${s.phone}`} className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#374151]"><Phone className="w-3 h-3" />{s.phone}</a>}
                     </div>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3">
                     <p className="text-xs text-[#374151] capitalize">{s.scheduleType || '—'}</p>
                     {s.workDays && s.workDays.length > 0 && (
-                      <p className="text-[0.6rem] text-[#9ca3af]">{s.workDays.join(', ')}</p>
+                      <p className="text-[0.72rem] text-[#6b7280]">{s.workDays.join(', ')}</p>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-xs text-[#6b7280] hidden md:table-cell">
+                  <td className="px-4 py-3 text-xs text-[#6b7280] hidden md:table-cell">
                     {s.scheduleType === 'on-call' ? <span className="text-amber-600 font-medium">On-Call</span>
                       : (s.shiftStart && s.shiftEnd) ? `${s.shiftStart} – ${s.shiftEnd}` : '—'}
                   </td>
-                  <td className="px-3 py-2">
-                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.6rem] font-medium capitalize ${statusStyle[s.status || 'inactive']}`}>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.72rem] font-medium capitalize ${statusStyle[s.status || 'inactive']}`}>
                       {s.status || 'inactive'}
                     </span>
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       <button type="button" title="Edit" onClick={() => openEdit(s)}
-                        className="p-1.5 rounded-md text-[#9ca3af] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
-                        <Pencil className="w-3.5 h-3.5" />
+                        className="p-1.5 rounded-md text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6] transition">
+                        <Edit className="w-3.5 h-3.5" />
                       </button>
                       <button type="button" title="Delete" onClick={() => setDeleteTarget(s)}
-                        className="p-1.5 rounded-md text-[#9ca3af] hover:text-red-600 hover:bg-red-50 transition">
+                        className="p-1.5 rounded-md text-[#6b7280] hover:text-red-600 hover:bg-red-50 transition">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -240,7 +240,7 @@ export default function StaffTable() {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-2 border-t border-[#e5e7eb] text-xs text-[#9ca3af] shrink-0">
+        <div className="px-4 py-2 border-t border-[#e5e7eb] text-xs text-[#6b7280] shrink-0">
           Showing <strong className="text-[#374151]">{filtered.length}</strong> of <strong className="text-[#374151]">{staff.length}</strong> staff members
         </div>
       </div>
@@ -300,7 +300,7 @@ export default function StaffTable() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Status</Label>
-                  <CustomSelect value={form.status as string} onChange={v => setForm({ ...form, status: v as StaffMember['status'] })}
+                  <CustomSelect centered value={form.status as string} onChange={v => setForm({ ...form, status: v as StaffMember['status'] })}
                     options={[
                       { value: 'active', label: 'Active' },
                       { value: 'on-call', label: 'On-Call' },

@@ -1,53 +1,43 @@
 import type { APIRoute } from 'astro';
-import { createClient } from '@sanity/client';
+import { sanityClient } from '../../lib/sanity';
 import { generateAccountNumber } from '../../lib/accountNumber';
+import { buildBookingDocument, validateBookingInput } from '../../lib/booking';
 
-// TEMPORARY: Hardcode your Sanity credentials for testing
-const sanityClient = createClient({
-  projectId: 'maowljqt',
-  dataset: 'production',
-  apiVersion: '2024-12-30',
-  useCdn: false,
-  token: 'skQU5fh9qMVHMXBEY4kuxZtrbCl4mTvfYqxBsXByrruUseL7ermec36O7RVOf1m4tmKoGAD50d7WGBn3JMS135tpCDhzJrkuPEOv8worEoPjLPmwK26UEQ0a67EdfQRCqItA5UsKohBZYka0xr25tyX89blfMbM0uIwAiGsavN53lSp0ncFK',
-});
+const jsonHeaders = { 'Content-Type': 'application/json' };
 
 export const POST: APIRoute = async ({ request }) => {
-  console.log('===== API ROUTE CALLED =====');
+  let body: unknown;
   try {
-    const formData = await request.json();
-    console.log('Received data:', formData);
+    body = await request.json();
+  } catch {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Send the booking as JSON.' }),
+      { status: 400, headers: jsonHeaders },
+    );
+  }
 
+  const result = validateBookingInput(body);
+  if (!result.ok) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Please check the highlighted fields.', errors: result.errors }),
+      { status: 400, headers: jsonHeaders },
+    );
+  }
+
+  try {
     const accountNumber = await generateAccountNumber();
-
-    console.log('Creating booking with account:', accountNumber);
-    const booking = await sanityClient.create({
-      _type: 'booking',
-      accountNumber,
-      ...formData,
-      eventDate: formData.eventDate || undefined,
-      guestCount: Number(formData.guestCount),
-      totalPrice: Number(formData.guestCount) * 15,
-      amountPaid: 0,
-      paymentStatus: 'unpaid',
-      createdAt: new Date().toISOString(),
-    });
-    console.log('Booking created:', booking._id);
+    const doc = buildBookingDocument(result.value, accountNumber, new Date().toISOString());
+    const booking = await sanityClient.create(doc);
 
     return new Response(
       JSON.stringify({ success: true, id: booking._id }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { status: 200, headers: jsonHeaders },
     );
-  } catch (error: any) {
-    console.error('❌ ERROR in API route:', error);
-    console.error('Error message:', error.message);
-    console.error('Error details:', error.response?.body || error);
+  } catch (error) {
+    console.error('create-booking failed:', error);
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || 'Unknown error',
-        details: error.response?.body || 'No additional details'
-      }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: false, error: 'We could not save your request. Please try again.' }),
+      { status: 500, headers: jsonHeaders },
     );
   }
 };

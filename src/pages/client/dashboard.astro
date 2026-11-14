@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { createClient } from '@sanity/client';
+import { sanityClient } from '../../lib/sanity';
 
 const id = Astro.url.searchParams.get('id');
 
@@ -9,22 +9,19 @@ let error = false;
 
 if (id) {
   try {
-    const client = createClient({
-      projectId: 'maowljqt',
-      dataset: 'production',
-      apiVersion: '2024-12-30',
-      useCdn: false,
-      token: import.meta.env.SANITY_TOKEN,
-    });
-    booking = await client.getDocument(id);
+    booking = await sanityClient.getDocument(id);
+    if (!booking || booking._type !== 'booking') {
+      error = true;
+      booking = null;
+    }
   } catch (e) {
     error = true;
   }
 }
 ---
 
-<Layout title="Booking Confirmed">
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+<Layout title="Booking Confirmed" noindex>
+  <main class="min-h-screen bg-gray-50 flex items-center justify-center p-6">
     {!id || error ? (
       <div class="text-center">
         <h1 class="text-2xl font-bold text-red-600">Booking not found</h1>
@@ -99,5 +96,5 @@ if (id) {
     ) : (
       <div class="text-center text-gray-500">Loading...</div>
     )}
-  </div>
+  </main>
 </Layout>

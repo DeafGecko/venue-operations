@@ -26,6 +26,8 @@ interface CustomSelectProps {
   previewFont?: boolean;
   disabled?: boolean;
   id?: string;
+  /** Open the list in the middle of the screen over a dimmed backdrop, instead of under the trigger */
+  centered?: boolean;
 }
 
 export default function CustomSelect({
@@ -37,6 +39,7 @@ export default function CustomSelect({
   previewFont = false,
   disabled = false,
   id,
+  centered = false,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
@@ -58,8 +61,21 @@ export default function CustomSelect({
   };
 
   useEffect(() => {
-    if (open) updatePosition();
-  }, [open]);
+    if (open && !centered) updatePosition();
+  }, [open, centered]);
+
+  // Centered lists have no anchor, so Escape is the keyboard way out
+  useEffect(() => {
+    if (!open || !centered) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, centered]);
 
   // Close on outside click or scroll
   useEffect(() => {
@@ -83,6 +99,31 @@ export default function CustomSelect({
     setOpen(false);
   };
 
+  const optionList = options.map(opt => (
+    <button
+      key={opt.value}
+      type="button"
+      role="option"
+      aria-selected={opt.value === value}
+      onClick={() => handleSelect(opt)}
+      className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2.5 hover:bg-[#f3f4f6] transition ${opt.value === value ? 'bg-[#f9fafb]' : ''}`}
+      style={opt.fontFamily ? { fontFamily: opt.fontFamily } : undefined}
+    >
+      {opt.icon && <span className="shrink-0">{opt.icon}</span>}
+      <span className="flex-1 min-w-0">
+        <span className="block truncate">{opt.label}</span>
+        {opt.description && (
+          <span className="block text-[0.72rem] text-[#6b7280] truncate" style={{ fontFamily: 'system-ui' }}>
+            {opt.description}
+          </span>
+        )}
+      </span>
+      {opt.value === value && (
+        <Check className="w-3.5 h-3.5 text-[#374151] shrink-0" style={{ fontFamily: 'system-ui' }} />
+      )}
+    </button>
+  ));
+
   return (
     <div className={`relative ${className}`}>
       {/* Trigger */}
@@ -99,43 +140,35 @@ export default function CustomSelect({
       >
         {current?.icon && <span className="shrink-0">{current.icon}</span>}
         <span className="flex-1 text-left truncate text-[#111827]">
-          {current ? current.label : <span className="text-[#9ca3af]">{placeholder}</span>}
+          {current ? current.label : <span className="text-[#6b7280]">{placeholder}</span>}
         </span>
-        <ChevronDown className={`w-3.5 h-3.5 text-[#9ca3af] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-[#6b7280] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Dropdown rendered in a portal — escapes any overflow:hidden ancestor */}
-      {open && typeof document !== 'undefined' && createPortal(
+      {/* Centered: full-screen overlay with the list in the middle */}
+      {open && centered && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/30 p-4">
+          <div
+            ref={dropdownRef}
+            role="listbox"
+            aria-label={placeholder}
+            className="w-full max-w-xs max-h-[70vh] overflow-y-auto bg-white border border-[#e5e7eb] rounded-xl shadow-2xl py-1"
+          >
+            {optionList}
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Anchored dropdown rendered in a portal — escapes any overflow:hidden ancestor */}
+      {open && !centered && typeof document !== 'undefined' && createPortal(
         <div
           ref={dropdownRef}
           role="listbox"
           style={{ ...dropdownStyle, maxHeight: '220px', overflowY: 'auto' }}
           className="bg-white border border-[#e5e7eb] rounded-lg shadow-xl overflow-hidden"
         >
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              role="option"
-              aria-selected={opt.value === value}
-              onClick={() => handleSelect(opt)}
-              className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2.5 hover:bg-[#f3f4f6] transition ${opt.value === value ? 'bg-[#f9fafb]' : ''}`}
-              style={opt.fontFamily ? { fontFamily: opt.fontFamily } : undefined}
-            >
-              {opt.icon && <span className="shrink-0">{opt.icon}</span>}
-              <span className="flex-1 min-w-0">
-                <span className="block truncate">{opt.label}</span>
-                {opt.description && (
-                  <span className="block text-[0.6rem] text-[#9ca3af] truncate" style={{ fontFamily: 'system-ui' }}>
-                    {opt.description}
-                  </span>
-                )}
-              </span>
-              {opt.value === value && (
-                <Check className="w-3.5 h-3.5 text-[#374151] shrink-0" style={{ fontFamily: 'system-ui' }} />
-              )}
-            </button>
-          ))}
+          {optionList}
         </div>,
         document.body
       )}

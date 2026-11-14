@@ -1,0 +1,33 @@
+---
+// src/pages/admin/account.astro
+// Account information – what the current session is signed in as
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const sessionValue = Astro.cookies.get('admin_session')?.value ?? '';
+const role = sessionValue.split(':')[1] || 'unknown';
+
+const roleLabels: Record<string, string> = {
+  admin: 'Admin',
+  manager: 'Manager',
+  developer: 'Developer',
+  viewer: 'Viewer',
+};
+const roleName = roleLabels[role] ?? 'Unknown';
+---
+
+<AdminLayout title="Account information" subtitle="Details for the account you are signed in with.">
+  <section class="bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-6 max-w-xl">
+    <dl class="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-4 text-sm">
+      <dt class="font-medium text-[#6b7280]">Role</dt>
+      <dd class="text-[#111827]">{roleName}</dd>
+
+      <dt class="font-medium text-[#6b7280]">Session</dt>
+      <dd class="text-[#111827]">Signed in, expires after 24 hours</dd>
+    </dl>
+    <p class="mt-6 text-xs text-[#6b7280]">
+      To change your role or access, ask an admin in
+      <a href="/admin/login-management" class="underline">Team &amp; Access</a>.
+    </p>
+  </section>
+</AdminLayout>

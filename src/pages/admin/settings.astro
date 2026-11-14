@@ -7,7 +7,52 @@ import SettingsForm from '../../components/admin/SettingsForm';
 ---
 
 <AdminLayout title="Settings" subtitle="Manage venue branding, colors, fees, and contact info.">
-      <div class="bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-4 overflow-y-auto max-h-[calc(100vh-11rem)]">
+      <section aria-labelledby="density-title" class="bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-4 mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 id="density-title" class="text-sm font-medium text-[#111827]">Layout density</h2>
+          <p class="text-xs text-[#6b7280]">Comfortable gives more space. Compact fits more rows on screen. Saved on this device.</p>
+        </div>
+        <div role="radiogroup" aria-labelledby="density-title" class="inline-flex rounded-lg border border-[#e5e7eb] p-0.5">
+          <button type="button" role="radio" data-density="comfortable" aria-checked="true" class="density-option px-3 py-1.5 rounded-md text-sm transition">Comfortable</button>
+          <button type="button" role="radio" data-density="compact" aria-checked="false" class="density-option px-3 py-1.5 rounded-md text-sm transition">Compact</button>
+        </div>
+      </section>
+      <script>
+        const KEY = "admin-density";
+        const options = document.querySelectorAll<HTMLButtonElement>(".density-option");
+        const current = () => {
+          try { return localStorage.getItem(KEY) === "compact" ? "compact" : "comfortable"; } catch { return "comfortable"; }
+        };
+        const paint = (mode: string) => {
+          document.documentElement.classList.toggle("density-compact", mode === "compact");
+          options.forEach((b) => {
+            const on = b.dataset.density === mode;
+            b.setAttribute("aria-checked", String(on));
+            b.classList.toggle("bg-[#111827]", on);
+            b.classList.toggle("text-white", on);
+          });
+        };
+        options.forEach((b) => b.addEventListener("click", () => {
+          try { localStorage.setItem(KEY, b.dataset.density!); } catch {}
+          paint(b.dataset.density!);
+        }));
+        paint(current());
+      </script>
+      </section>
+      <section aria-labelledby="session-title" class="bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-4 mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p id="session-title" class="text-sm font-medium text-[#111827]">Signed in</p>
+          <p class="text-xs text-[#6b7280]">Log out when you are done on a shared computer.</p>
+        </div>
+        <a
+          href="/admin/logout"
+          class="inline-flex items-center rounded-lg border px-3 py-1.5 text-sm font-medium transition hover:bg-(--admin-border)"
+          style="color: var(--admin-sidebar); border-color: color-mix(in srgb, var(--admin-sidebar) 35%, transparent);"
+        >
+          Log out
+        </a>
+      </section>
+      <div class="bg-white rounded-xl border border-[#e5e7eb] shadow-sm p-6">
         <SettingsForm client:load />
       </div>
 </AdminLayout>

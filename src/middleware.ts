@@ -11,7 +11,18 @@ function isAdminPath(pathname: string) {
 }
 
 // Admin pages are for staff, not search engines. Every admin response, including redirects, is marked noindex.
+// Live build with DEMO_ONLY=true: only the demo and static files are served. Everything else goes to the demo.
+const DEMO_ONLY = import.meta.env.DEMO_ONLY === 'true';
+const DEMO_OPEN_PREFIXES = ['/demo', '/_astro', '/styles', '/favicon', '/apple-touch-icon', '/logo', '/robots.txt', '/sitemap'];
+
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (DEMO_ONLY) {
+    const path = new URL(context.request.url).pathname;
+    if (!DEMO_OPEN_PREFIXES.some((p) => path === p || path.startsWith(p))) {
+      return context.redirect('/demo');
+    }
+    return next();
+  }
   if (!isAdminPath(new URL(context.request.url).pathname)) {
     return next();
   }

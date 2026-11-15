@@ -30,6 +30,8 @@ interface Props {
 // Calendar grid component
 export default function CalendarGrid({ bookings }: Props) {
       const [currentDate, setCurrentDate] = useState(new Date());
+      // Payment panel: which group to show (dropdown in the panel)
+      const [payFilter, setPayFilter] = useState<'paid' | 'partial' | 'unpaid'>('unpaid');
       const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
       const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -492,9 +494,24 @@ export default function CalendarGrid({ bookings }: Props) {
               <p className="text-[0.72rem] font-semibold uppercase tracking-widest text-[var(--cal-muted)]">Payments this month</p>
               <p className="mt-1 text-sm text-[var(--cal-muted)]">Tap a booking to open it</p>
             </div>
-            <PaymentGroup title="Paid" tone="text-emerald-600" list={paidList} />
-            <PaymentGroup title="Partial" tone="text-amber-600" list={partialList} />
-            <PaymentGroup title="Unpaid" tone="text-red-600" list={unpaidList} />
+            <div>
+              <label htmlFor="pay-filter" className="sr-only">Show payment status</label>
+              <select
+                id="pay-filter"
+                value={payFilter}
+                onChange={(e) => setPayFilter(e.target.value as 'paid' | 'partial' | 'unpaid')}
+                className="w-full h-9 rounded-md border border-[var(--cal-line)] bg-transparent px-3 text-sm text-[var(--cal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cal-link)]"
+              >
+                <option value="paid">Paid</option>
+                <option value="partial">Partial</option>
+                <option value="unpaid">Unpaid</option>
+              </select>
+            </div>
+            <PaymentGroup
+              title={payFilter.charAt(0).toUpperCase() + payFilter.slice(1)}
+              tone={payFilter === 'paid' ? 'text-emerald-600' : payFilter === 'partial' ? 'text-amber-600' : 'text-red-600'}
+              list={payFilter === 'paid' ? paidList : payFilter === 'partial' ? partialList : unpaidList}
+            />
           </aside>
         </div>
       </div>

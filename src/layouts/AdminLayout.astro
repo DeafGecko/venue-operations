@@ -168,8 +168,9 @@ const publicGroups = sidebarGroups
   .map((group) => ({ ...group, items: group.items.filter((item) => item.href && PUBLIC_PAGES.includes(item.href)) }))
   .filter((group) => group.items.length > 0);
 
+const ACCESS_EMAIL = "dwirog@gmail.com"; // where access requests go
 const visibleNavGroups = anonymousViewer
-  ? publicGroups
+  ? sidebarGroups
   : isViewOnly
   ? sidebarGroups
       .map((group) => ({
@@ -686,7 +687,17 @@ const activePath = Astro.url.pathname;
                 <ul class="mt-0.5">
                   {items.map(({ href, icon: Icon, label }) => (
                     <li>
-                      {href ? (
+                      {href && anonymousViewer && !PUBLIC_PAGES.includes(href) ? (
+                        <a
+                          href={`mailto:${ACCESS_EMAIL}?subject=${encodeURIComponent(`Access request: ${label}`)}`}
+                          title={`Request access to ${label}`}
+                          class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs opacity-40 hover:opacity-70 transition"
+                        >
+                          <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                          {label}
+                          <span class="ml-auto text-[0.65rem] uppercase tracking-wide opacity-80">Request</span>
+                        </a>
+                      ) : href ? (
                         <a
                           href={href}
                           class:list={[

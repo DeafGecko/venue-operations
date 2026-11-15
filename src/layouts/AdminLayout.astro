@@ -156,7 +156,7 @@ const HIDDEN_FOR_VIEW = ["Data Management"];
 const isViewOnly = VIEW_ONLY_ROLES.includes(sessionRole);
 
 // Items hidden from the sidebar for everyone (they are still listed in the Jump-to launcher only if they work).
-const HIDDEN_FROM_SIDEBAR = ["Equipment", "Maintenance", "Inventory", "Tasks", "Messages", "Security", "Reports", "Pricing", "Settings"];
+const HIDDEN_FROM_SIDEBAR = ["Equipment", "Maintenance", "Inventory", "Tasks", "Messages", "Security", "Reports", "Pricing", "Settings", "Data Management"];
 const sidebarGroups = adminNavGroups
   .map((group) => ({ ...group, items: group.items.filter((item) => !HIDDEN_FROM_SIDEBAR.includes(item.label)) }))
   .filter((group) => group.items.length > 0);

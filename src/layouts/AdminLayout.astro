@@ -89,7 +89,9 @@ const c = {
 const currentYear = new Date().getFullYear();
 
 // Signed-in role, used to switch view-only accounts into read-only screens.
-const sessionRole = (await verifySession(Astro.cookies.get("admin_session")?.value)) ?? "";
+// Anyone without a sign-in gets the read-only "viewer" view (public dashboard); signed-in users get their own role.
+const sessionRole = (await verifySession(Astro.cookies.get("admin_session")?.value))
+  ?? ((Astro.locals as unknown as { anonymousViewer?: boolean }).anonymousViewer ? "viewer" : "");
 // Pages opened from a dashboard click carry ?from=dashboard and get the same back link.
 const openedFromDashboard = Astro.url.searchParams.get("from") === "dashboard";
 

@@ -169,7 +169,7 @@ const visibleNavGroups = isViewOnly
   : sidebarGroups;
 
 const navGroups = demo
-  ? visibleNavGroups.map((group) => ({
+  ? visibleNavGroups.filter((group) => group.label !== "Insights" && group.label !== "Data").map((group) => ({
       ...group,
       items: group.items.map((item) => ({
         ...item,

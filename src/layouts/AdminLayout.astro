@@ -726,21 +726,17 @@ const activePath = Astro.url.pathname;
         <!-- Visitors: locked pages show a tint and a request message -->
         <div id="locked-msg" role="status" hidden class="mx-2 mb-2 rounded-lg border border-white/15 bg-black/30 p-3 text-xs text-white/90">
           <p id="locked-msg-text"></p>
-          <a id="locked-msg-mail" href="#" class="mt-2 inline-block underline">Email to request access code</a>
         </div>
         <script is:inline>
           (() => {
             const text = document.getElementById("locked-msg-text");
             const box = document.getElementById("locked-msg");
-            const mail = document.getElementById("locked-msg-mail");
-            const EMAIL = "dwirog@gmail.com";
             document.querySelectorAll("[data-locked-page]").forEach((btn) => {
               btn.addEventListener("click", () => {
                 const page = btn.getAttribute("data-locked-page");
                 document.querySelectorAll("[data-locked-page]").forEach((b) => b.classList.remove("ring-1", "ring-white/40"));
                 btn.classList.add("ring-1", "ring-white/40", "opacity-80");
-                text.textContent = page + " is locked. Contact " + EMAIL + " to request an access code to view the rest.";
-                mail.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Access code request: " + page);
+                text.textContent = page + " is locked. Contact the developer to receive an access code to view the rest.";
                 box.hidden = false;
               });
             });

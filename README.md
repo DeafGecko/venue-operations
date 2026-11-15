@@ -59,9 +59,14 @@ Bookings, clients, vendors, tenants, staff, and contracts live in Sanity. Each b
 
 ## Access
 
-The admin needs a sign-in. Credentials are never stored in this repository.
+The live site opens straight to the admin dashboard. Credentials and access codes are never stored in this repository.
 
-To review the admin, ask the project owner for a view-only account. A viewer account can browse every page but cannot change anything. Sign in at the admin login page with the email and password you were given.
+- **Visitors (no sign-in):** can view the Dashboard and Calendar, read-only. Every other sidebar page is shown tinted. Clicking one opens a popup asking for an access code.
+- **Access code:** ask the developer for the code. Entering it unlocks view-only access to the whole admin. Nothing can be changed in view-only mode.
+- **Admin sign-in:** the owner signs in at the admin login page to make changes.
+- **Contact details:** client emails and phone numbers are shown as plain text to visitors, and buttons that need changes are disabled.
+
+The access code is stored as the `ACCESS_CODE` secret in Cloudflare, not in the code.
 
 ---
 

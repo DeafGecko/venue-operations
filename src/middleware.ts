@@ -27,7 +27,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const signedIn = !!(await verifySession(context.cookies.get('admin_session')?.value));
     const isAdminArea = path.startsWith('/admin') || path.startsWith('/api/admin');
     const isLoginArea = path.startsWith('/admin/login') || path.startsWith('/api/admin/auth') || path.startsWith('/admin/forgot-password') || path.startsWith('/admin/reset-password');
-    const isPublicDashboard = path === '/admin/dashboard' && context.request.method === 'GET';
+    const isPublicDashboard = ['/admin/dashboard', '/admin/calendar'].includes(path) && context.request.method === 'GET';
     if (isAdminArea && !isLoginArea && !signedIn && !isPublicDashboard) return context.redirect('/admin/login');
   }
   if (!isAdminPath(new URL(context.request.url).pathname)) {
@@ -51,8 +51,8 @@ async function guardAdmin(context: Parameters<MiddlewareHandler>[0], next: Param
   const role = await verifySession(session?.value); // admin | manager | developer | viewer, only if the signature is genuine
 
   if (!role) {
-    // Read-only public view: anyone can look at the dashboard. Nothing else is open without signing in.
-    if (request.method === 'GET' && new URL(request.url).pathname === '/admin/dashboard') {
+    // Read-only public view: anyone can look at the dashboard and calendar. Nothing else is open without signing in.
+    if (request.method === 'GET' && ['/admin/dashboard', '/admin/calendar'].includes(new URL(request.url).pathname)) {
       (context.locals as unknown as { anonymousViewer?: boolean }).anonymousViewer = true;
       return next();
     }

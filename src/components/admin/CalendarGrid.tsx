@@ -107,6 +107,9 @@ export default function CalendarGrid({ bookings }: Props) {
             setSelectedBooking(null);
       };
 
+      // Visitors (viewer role) see contact details as plain text; no mail app opens.
+      const viewOnly = typeof document !== 'undefined' && document.documentElement.dataset.role === 'viewer';
+
       // ── Month totals and payment groups for the top cards and the right-hand panel ──
       const sum = (list: Booking[], pick: (b: Booking) => number) => list.reduce((t, b) => t + (pick(b) || 0), 0);
       const byDate = (a: Booking, b: Booking) => (a.eventDate < b.eventDate ? -1 : 1);
@@ -427,7 +430,7 @@ export default function CalendarGrid({ bookings }: Props) {
                               </div>
                               <div className="flex justify-between py-1">
                                     <span className="text-[var(--cal-muted)]">Email</span>
-                                    {b.email
+                                    {b.email && !viewOnly
                                           ? <a href={`mailto:${b.email}`} className="text-[var(--cal-link)] hover:underline break-all">{b.email}</a>
                                           : <span className="text-[var(--cal-muted)]">Not on file</span>}
                               </div>
@@ -445,7 +448,7 @@ export default function CalendarGrid({ bookings }: Props) {
                                     <span className={balance > 0 ? 'text-red-600' : 'text-emerald-600'}>${formatMoney(balance)}</span>
                               </div>
                               <div className="flex flex-wrap gap-2 pt-2">
-                                    {b.email && (
+                                    {b.email && !viewOnly && (
                                           <a href={`mailto:${b.email}?subject=${encodeURIComponent(`Your booking ${b.accountNumber}`)}`}
                                                 className="px-3 py-1.5 rounded-md border border-[var(--cal-line)] hover:bg-[var(--cal-hover)] transition text-xs">
                                                 Email client
@@ -457,7 +460,7 @@ export default function CalendarGrid({ bookings }: Props) {
                                                 Call
                                           </a>
                                     )}
-                                    {b.email && balance > 0 && (
+                                    {b.email && !viewOnly && balance > 0 && (
                                           <a href={`mailto:${b.email}?subject=${reminderSubject}&body=${reminderBody}`}
                                                 className="px-3 py-1.5 rounded-md border border-[var(--cal-line)] hover:bg-[var(--cal-hover)] transition text-xs">
                                                 Send balance reminder

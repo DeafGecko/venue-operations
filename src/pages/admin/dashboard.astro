@@ -448,9 +448,11 @@ const stats = [
           $("bd-time").textContent = b.startTime && b.endTime ? `${b.startTime} – ${b.endTime}` : "—";
           $("bd-type").textContent = b.eventType || "Event";
           $("bd-phone").textContent = b.phone || "Not on file";
-          $("bd-phone").href = b.phone ? `tel:${b.phone}` : "#";
+          // Visitors (viewer role) see the contact details as plain text: no mail or phone app opens.
+          const viewerOnly = document.documentElement.dataset.role === "viewer";
+          $("bd-phone").href = b.phone && !viewerOnly ? `tel:${b.phone}` : "#";
           $("bd-email").textContent = b.email || "Not on file";
-          $("bd-email").href = b.email ? `mailto:${b.email}` : "#";
+          $("bd-email").href = b.email && !viewerOnly ? `mailto:${b.email}` : "#";
           $("bd-total").textContent = money(b.totalPrice);
           $("bd-paid").textContent = money(b.amountPaid);
           const balance = Math.max((b.totalPrice || 0) - (b.amountPaid || 0), 0);

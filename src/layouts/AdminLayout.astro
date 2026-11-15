@@ -978,10 +978,6 @@ const activePath = Astro.url.pathname;
                       Change password
                       <span class="ml-auto text-xs admin-muted">Off</span>
                     </span>
-                    <a href="/admin/billing" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-(--admin-border) transition">
-                      <DollarSign className="w-3.5 h-3.5 admin-muted" aria-hidden="true" />
-                      Billing
-                    </a>
                     {sessionRole === "admin" && (<a href="/admin/login-management" role="menuitem" class="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-(--admin-border) transition">
                       <Users className="w-3.5 h-3.5 admin-muted" aria-hidden="true" />
                       Team & Access

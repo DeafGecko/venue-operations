@@ -94,6 +94,7 @@ const sessionRole = (await verifySession(Astro.cookies.get("admin_session")?.val
   ?? ((Astro.locals as unknown as { anonymousViewer?: boolean }).anonymousViewer ? "viewer" : "");
 // Pages opened from a dashboard click carry ?from=dashboard and get the same back link.
 const openedFromDashboard = Astro.url.searchParams.get("from") === "dashboard";
+const codeWrong = Astro.url.searchParams.get("code") === "wrong";
 
 // ── Navigation ──
 const adminNavGroups = [
@@ -726,6 +727,12 @@ const activePath = Astro.url.pathname;
         <!-- Visitors: locked pages show a tint and a request message -->
         <div id="locked-msg" role="status" hidden class="mx-2 mb-2 rounded-lg border border-white/15 bg-black/30 p-3 text-xs text-white/90">
           <p id="locked-msg-text"></p>
+          <form method="POST" action="/api/access-code" class="mt-2 flex gap-2">
+            <label class="sr-only" for="access-code">Access code</label>
+            <input id="access-code" name="code" type="text" autocomplete="off" required class="min-w-0 flex-1 rounded-md px-2 py-1 text-xs text-[#111827]" />
+            <button type="submit" class="rounded-md bg-white px-2.5 py-1 text-xs font-medium text-[#111827]">Unlock</button>
+          </form>
+          {codeWrong && <p role="alert" class="mt-2 text-red-200">That code is not right. Ask the developer for the access code.</p>}
         </div>
         <script is:inline>
           (() => {
@@ -736,7 +743,7 @@ const activePath = Astro.url.pathname;
                 const page = btn.getAttribute("data-locked-page");
                 document.querySelectorAll("[data-locked-page]").forEach((b) => b.classList.remove("ring-1", "ring-white/40"));
                 btn.classList.add("ring-1", "ring-white/40", "opacity-80");
-                text.textContent = page + " is locked. Contact the developer to receive an access code to view the rest.";
+                text.textContent = page + " is locked. Enter the access code to view the rest (view only).";
                 box.hidden = false;
               });
             });

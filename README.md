@@ -22,7 +22,7 @@ https://venue-operations-api.dwirog.workers.dev (opens the admin; sign in to use
 - **Clients / Vendors / Tenants / Staff / Contacts** — full CRUD with CSV import/export. Clients are the source for booking and contract contact details.
 - **Contracts** — contracts are linked to a client from the Clients list, so names and emails match.
 - **QR Codes** — generate event QR codes, track RSVPs and check-ins.
-- **Login Management (Team & Access)** — admins only. Add, edit name/email/role, reset password, block, and delete users.
+- **Team & Access** — admins only. Add, edit name/email/role, reset password, block, and delete users.
 - **Settings** — company name, tax ID, brand colors, logo, typography, fees and taxes, and contact details. Layout density (Comfortable or Compact) is saved per browser.
 - **Data Management** — import/export Sanity-backed data types.
 
@@ -54,6 +54,14 @@ Bookings, clients, vendors, tenants, staff, and contracts live in Sanity. Each b
 | QR Codes  | qrcode                     |
 | CSV       | PapaParse                  |
 | Icons     | Lucide React               |
+
+---
+
+## Access
+
+The admin needs a sign-in. Credentials are never stored in this repository.
+
+To review the admin, ask the project owner for a view-only account. A viewer account can browse every page but cannot change anything. Sign in at the admin login page with the email and password you were given.
 
 ---
 

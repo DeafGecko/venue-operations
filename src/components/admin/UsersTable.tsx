@@ -1,7 +1,7 @@
 // src/components/admin/UsersTable.tsx
 import { useState, useEffect } from 'react';
 import { useAppDialog } from './useAppDialog';
-import { RefreshCw, Key, Shield, Plus, X, Trash2, Edit } from 'lucide-react';
+import { RefreshCw, Key, Shield, Plus, X, Edit } from 'lucide-react';
 import CustomSelect from './CustomSelect';
 
 interface User {
@@ -135,16 +135,6 @@ export default function UsersTable() {
     }
   };
 
-  const handleDelete = async (user: User) => {
-    if (!(await confirm(`Delete ${user.name} (${user.email})? This cannot be undone.`, { danger: true, confirmLabel: 'Delete' }))) return;
-    try {
-      const res = await fetch(`/api/admin/users/${user._id}`, { method: 'DELETE' });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || 'Could not delete this user.');
-      setUsers(users.filter(u => u._id !== user._id));
-    } catch (err: any) { void notify(err.message); }
-  };
-
   if (loading) return (
     <div className="flex items-center gap-2 py-10 text-sm text-[#6b7280]">
       <RefreshCw className="w-4 h-4 animate-spin" /> Loading…
@@ -228,14 +218,6 @@ export default function UsersTable() {
                         className={`p-1.5 rounded-md transition ${user.isActive ? 'text-[#6b7280] hover:text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50'}`}
                       >
                         <Shield className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user)}
-                        title="Delete user"
-                        aria-label={`Delete ${user.name}`}
-                        className="p-1.5 rounded-md text-[#6b7280] hover:text-red-600 hover:bg-red-50 transition"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </td>

@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import type { MiddlewareHandler } from 'astro';
+import { verifySession } from './lib/session';
 
 const PUBLIC_PATHS = ['/admin/login', '/admin/forgot-password', '/admin/reset-password', '/api/admin/auth'];
 
@@ -23,7 +24,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (liveUrl.hostname === LIVE_HOST) {
     const path = liveUrl.pathname;
     if (path === '/') return context.redirect('/demo');
-    const signedIn = (context.cookies.get('admin_session')?.value ?? '').startsWith('authenticated:');
+    const signedIn = !!(await verifySession(context.cookies.get('admin_session')?.value));
     const isAdminArea = path.startsWith('/admin') || path.startsWith('/api/admin');
     const isLoginArea = path.startsWith('/admin/login') || path.startsWith('/api/admin/auth') || path.startsWith('/admin/forgot-password') || path.startsWith('/admin/reset-password');
     if (isAdminArea && !isLoginArea && !signedIn) return context.redirect('/demo');
@@ -45,13 +46,11 @@ async function guardAdmin({ request, cookies, redirect }: Parameters<MiddlewareH
   }
 
   const session = cookies.get('admin_session');
-  const sessionValue = session?.value ?? '';
+  const role = await verifySession(session?.value); // admin | manager | developer | viewer, only if the signature is genuine
 
-  if (!sessionValue.startsWith('authenticated:')) {
+  if (!role) {
     return redirect('/admin/login');
   }
-
-  const role = sessionValue.split(':')[1]; // admin | manager | developer | viewer
 
   // Every write to the admin API is admin or manager only (README: developer and viewer are view-only).
   // The one exception is changing your own password, which any signed-in user may do.

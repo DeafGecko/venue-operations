@@ -4,8 +4,11 @@ import { runtimeEnv } from '../../../lib/runtime-env';
 import { sanityClient } from '../../../lib/sanity';
 import { verifyPassword } from '../../../lib/auth';
 
-function sessionCookie(role: string) {
-  return `admin_session=authenticated:${role}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`;
+import { makeSessionValue } from '../../../lib/session';
+
+async function sessionCookie(role: string): Promise<string> {
+  const value = await makeSessionValue(role);
+  return `admin_session=${value ?? ''}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`;
 }
 
 export const POST: APIRoute = async ({ request, redirect }) => {
@@ -24,7 +27,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return new Response(null, {
       status: 302,
       headers: {
-        'Set-Cookie': sessionCookie('admin'),
+        'Set-Cookie': await sessionCookie('admin'),
         'Location': '/admin/dashboard',
       },
     });
@@ -49,7 +52,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     return new Response(null, {
       status: 302,
       headers: {
-        'Set-Cookie': sessionCookie(user.role || 'viewer'),
+        'Set-Cookie': await sessionCookie(user.role || 'viewer'),
         'Location': '/admin/dashboard',
       },
     });

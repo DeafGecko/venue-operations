@@ -5,6 +5,7 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { sanityClient } from '../../lib/sanity';
 import BookingTable from '../../components/admin/BookingTable';
+import { verifySession } from '../../lib/session';
 
 // Fetch all bookings
 const bookings = await sanityClient.fetch(`
@@ -29,6 +30,8 @@ _id,
   }
 `);
 
+const viewerRole = (await verifySession(Astro.cookies.get('admin_session')?.value)) ?? '';
+
 // Month filter from the dashboard: ?month=YYYY-MM. Anything else shows all bookings.
 const rawMonth = Astro.url.searchParams.get('month') ?? '';
 const monthFilter = /^\d{4}-(0[1-9]|1[0-2])$/.test(rawMonth) ? rawMonth : '';
@@ -48,5 +51,5 @@ const monthLabel = monthFilter
   </div>
 )}
 <AdminLayout title="Bookings" subtitle={monthFilter ? `${visibleBookings.length} bookings in ${monthLabel}` : `${bookings.length} total bookings`}>
-  <BookingTable client:load initialBookings={visibleBookings} openNew={Astro.url.searchParams.get('new') === '1' && ['admin', 'manager'].includes((Astro.cookies.get('admin_session')?.value ?? '').split(':')[1] ?? '')} />
+  <BookingTable client:load initialBookings={visibleBookings} openNew={Astro.url.searchParams.get('new') === '1' && ['admin', 'manager'].includes(viewerRole)} />
 </AdminLayout>

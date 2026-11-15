@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { adminCookie } from './helpers';
 
 test('floor edit opens a centered modal over a dark tint and Escape closes it', async ({ context, page }, testInfo) => {
   test.skip(testInfo.project.name === 'phone', 'Checked on desktop.');
-  await context.addCookies([{ name: 'admin_session', value: 'authenticated:manager', url: 'http://localhost:4330' }]);
+  await context.addCookies([{ name: 'admin_session', value: adminCookie('manager'), url: 'http://localhost:4330' }]);
   await page.goto('/admin/floor-plans');
 
   const editButtons = page.getByRole('button', { name: 'Edit', exact: true });
@@ -22,7 +23,7 @@ test('floor edit opens a centered modal over a dark tint and Escape closes it', 
 // Add Floor uses the same modal, so this check runs even when there are no floors to edit.
 test('add floor modal has the dark tint and closes on Escape', async ({ context, page }, testInfo) => {
   test.skip(testInfo.project.name === 'phone', 'Checked on desktop.');
-  await context.addCookies([{ name: 'admin_session', value: 'authenticated:manager', url: 'http://localhost:4330' }]);
+  await context.addCookies([{ name: 'admin_session', value: adminCookie('manager'), url: 'http://localhost:4330' }]);
   await page.goto('/admin/floor-plans');
   await page.getByRole('button', { name: 'Add Floor' }).click();
 

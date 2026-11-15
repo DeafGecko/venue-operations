@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { adminCookie } from './helpers';
 
 test('status dropdown opens centered on screen and closes on Escape', async ({ context, page }, testInfo) => {
   test.skip(testInfo.project.name === 'phone', 'Checked on desktop; the same component is used on phones.');
-  await context.addCookies([{ name: 'admin_session', value: 'authenticated:manager', url: 'http://localhost:4330' }]);
+  await context.addCookies([{ name: 'admin_session', value: adminCookie('manager'), url: 'http://localhost:4330' }]);
   await page.goto('/admin/tenants');
   await page.waitForLoadState('networkidle');
 

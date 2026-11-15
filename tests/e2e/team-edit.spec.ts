@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { adminCookie } from './helpers';
 
 test('edit dialog opens from the Team & Access row and cancel saves nothing', async ({ context, page }) => {
-  await context.addCookies([{ name: 'admin_session', value: 'authenticated:admin', url: 'http://localhost:4330' }]);
+  await context.addCookies([{ name: 'admin_session', value: adminCookie('admin'), url: 'http://localhost:4330' }]);
 
   let saveCalled = false;
   await page.route('**/api/admin/users/**', (route) => {

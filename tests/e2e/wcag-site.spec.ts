@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { writeFileSync, existsSync, readFileSync } from 'fs';
+import { adminCookie } from './helpers';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const PUBLIC = ['/book', '/client/login', '/admin/login', '/client/dashboard?id=none'];
@@ -32,7 +33,7 @@ for (const theme of ['light', 'dark']) {
   }
   for (const path of ADMIN) {
     test(`WCAG ${theme} ${path}`, async ({ context, page }) => {
-      await context.addCookies([{ name: 'admin_session', value: 'authenticated:admin', url: 'http://localhost:4330' }]);
+      await context.addCookies([{ name: 'admin_session', value: adminCookie('admin'), url: 'http://localhost:4330' }]);
       await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
       await page.goto(path);
       await page.waitForLoadState('networkidle');

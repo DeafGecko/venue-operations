@@ -1,10 +1,11 @@
 import { expect, test } from '@playwright/test';
+import { adminCookie } from './helpers';
 
 // A viewer can look around, but cannot add or change anything, and does not see Settings.
 test.use({ storageState: undefined });
 
 test.beforeEach(async ({ context }) => {
-  await context.addCookies([{ name: 'admin_session', value: 'authenticated:viewer', url: 'http://localhost:4330' }]);
+  await context.addCookies([{ name: 'admin_session', value: adminCookie('viewer'), url: 'http://localhost:4330' }]);
 });
 
 test('viewer sidebar hides Settings and Data Management', async ({ page }, testInfo) => {

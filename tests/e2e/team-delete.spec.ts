@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
+import { adminCookie } from './helpers';
 
 test.use({ storageState: undefined });
 
 test('admin sees a delete button on each user and cancelling the centered dialog deletes nothing', async ({ context, page }) => {
-  await context.addCookies([{ name: 'admin_session', value: 'authenticated:admin', url: 'http://localhost:4330' }]);
+  await context.addCookies([{ name: 'admin_session', value: adminCookie('admin'), url: 'http://localhost:4330' }]);
 
   let deleteCalled = false;
   await page.route('**/api/admin/users/**', (route) => {

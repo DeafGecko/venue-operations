@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { adminCookie } from './helpers';
 
 test('clicking a revenue-by-month bar opens only that month of bookings', async ({ context, page }, testInfo) => {
   test.skip(testInfo.project.name === 'phone', 'Checked on desktop.');
-  await context.addCookies([{ name: 'admin_session', value: 'authenticated:admin', url: 'http://localhost:4330' }]);
+  await context.addCookies([{ name: 'admin_session', value: adminCookie('admin'), url: 'http://localhost:4330' }]);
   await page.goto('/admin/dashboard');
   await page.waitForLoadState('networkidle');
 

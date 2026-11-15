@@ -1,10 +1,11 @@
 import { expect, test } from '@playwright/test';
+import { adminCookie } from './helpers';
 
 test.use({ storageState: undefined });
 
 test.beforeEach(async ({ context }) => {
   await context.addCookies([
-    { name: 'admin_session', value: 'authenticated:manager', url: 'http://localhost:4330' },
+    { name: 'admin_session', value: adminCookie('manager'), url: 'http://localhost:4330' },
   ]);
 });
 

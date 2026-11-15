@@ -1,10 +1,11 @@
 // src/pages/api/admin/users/[id].ts
 import type { APIRoute } from 'astro';
 import { sanityClient } from '../../../../lib/sanity';
+import { verifySession } from '../../../../lib/session';
 
 // Deleting an account is admin-only, on top of the write-role check in middleware.
 export const DELETE: APIRoute = async ({ params, cookies }) => {
-  const role = (cookies.get('admin_session')?.value ?? '').split(':')[1];
+  const role = (await verifySession(cookies.get('admin_session')?.value)) ?? '';
   if (role !== 'admin') {
     return new Response(JSON.stringify({ error: 'Only admins can delete users.' }), {
       status: 403,
@@ -46,7 +47,7 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
     if (!id) return jsonError('Missing ID', 400);
 
     const body = await request.json();
-    const role = (cookies.get('admin_session')?.value ?? '').split(':')[1];
+    const role = (await verifySession(cookies.get('admin_session')?.value)) ?? '';
     const updateData: any = {};
 
     // Name and email identify the account, so only admins change them.

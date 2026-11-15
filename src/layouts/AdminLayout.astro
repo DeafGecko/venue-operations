@@ -4,6 +4,7 @@
 
 import "../styles/global.css";
 import { sanityClient } from "../lib/sanity";
+import { verifySession } from "../lib/session";
 
 import {
   LayoutDashboard,
@@ -89,7 +90,7 @@ const c = {
 const currentYear = new Date().getFullYear();
 
 // Signed-in role, used to switch view-only accounts into read-only screens.
-const sessionRole = (Astro.cookies.get("admin_session")?.value ?? "").split(":")[1] ?? "";
+const sessionRole = (await verifySession(Astro.cookies.get("admin_session")?.value)) ?? "";
 // Pages opened from a dashboard click carry ?from=dashboard and get the same back link.
 const openedFromDashboard = Astro.url.searchParams.get("from") === "dashboard";
 

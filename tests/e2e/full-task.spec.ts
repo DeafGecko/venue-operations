@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { openBooking } from './helpers';
+import { adminCookie } from './helpers';
 
 // One task, end to end: create booking -> check calendar -> view bill -> read payment status.
 // The create step is stubbed so no test data is written to Sanity. The admin pages read live data (read-only).
@@ -24,7 +25,7 @@ test('create booking, check calendar, view bill, read payment status', async ({ 
   expect(submitted).toMatchObject({ clientName: 'Ada Lovelace', guestCount: 120 });
 
   // 2-3. Check calendar and view bills (admin, read-only)
-  await context.addCookies([{ name: 'admin_session', value: 'authenticated:manager', url: 'http://localhost:4330' }]);
+  await context.addCookies([{ name: 'admin_session', value: adminCookie('manager'), url: 'http://localhost:4330' }]);
   await page.goto('/admin/calendar');
   await expect(page.getByRole('heading', { name: 'Calendar' }).first()).toBeVisible();
   await expect(page.getByRole('heading', { name: /\d{4}/ }).first()).toBeVisible();

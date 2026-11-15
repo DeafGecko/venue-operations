@@ -724,29 +724,38 @@ const activePath = Astro.url.pathname;
             ))
           }
         </nav>
-        <!-- Visitors: locked pages show a tint and a request message -->
-        <div id="locked-msg" role="status" hidden class="mx-2 mb-2 rounded-lg border border-white/15 bg-black/30 p-3 text-xs text-white/90">
-          <p id="locked-msg-text"></p>
-          <form method="POST" action="/api/access-code" class="mt-2 flex gap-2">
-            <label class="sr-only" for="access-code">Access code</label>
-            <input id="access-code" name="code" type="text" autocomplete="off" required class="min-w-0 flex-1 rounded-md px-2 py-1 text-xs text-[#111827]" />
-            <button type="submit" class="rounded-md bg-white px-2.5 py-1 text-xs font-medium text-[#111827]">Unlock</button>
-          </form>
-          {codeWrong && <p role="alert" class="mt-2 text-red-200">That code is not right. Ask the developer for the access code.</p>}
+        <!-- Visitors: a locked page opens this popup over a dark tint -->
+        <div id="locked-msg" hidden class="fixed inset-0 z-[9000] flex items-center justify-center bg-black/60 p-4" role="presentation">
+          <div role="dialog" aria-modal="true" aria-labelledby="locked-title" class="w-full max-w-sm rounded-xl bg-white p-6 text-[#111827] shadow-2xl">
+            <h2 id="locked-title" class="text-sm font-semibold"></h2>
+            <p class="mt-2 text-sm text-[#374151]">Contact the developer to receive an access code to view the rest.</p>
+            <form method="POST" action="/api/access-code" class="mt-4 space-y-2">
+              <label for="access-code" class="block text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Access code</label>
+              <div class="flex gap-2">
+                <input id="access-code" name="code" type="text" autocomplete="off" required class="h-9 min-w-0 flex-1 rounded-md border border-[#e5e7eb] px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
+                <button type="submit" class="h-9 rounded-md bg-[#111827] px-4 text-sm font-medium text-white hover:opacity-90">Unlock</button>
+              </div>
+              {codeWrong && <p role="alert" class="text-xs text-red-600">That code is not right. Ask the developer for the access code.</p>}
+            </form>
+            <button type="button" id="locked-close" class="mt-4 text-xs text-[#6b7280] underline">Close</button>
+          </div>
         </div>
         <script is:inline>
           (() => {
-            const text = document.getElementById("locked-msg-text");
-            const box = document.getElementById("locked-msg");
+            const modal = document.getElementById("locked-msg");
+            const title = document.getElementById("locked-title");
+            const close = () => { modal.hidden = true; };
             document.querySelectorAll("[data-locked-page]").forEach((btn) => {
               btn.addEventListener("click", () => {
-                const page = btn.getAttribute("data-locked-page");
-                document.querySelectorAll("[data-locked-page]").forEach((b) => b.classList.remove("ring-1", "ring-white/40"));
-                btn.classList.add("ring-1", "ring-white/40", "opacity-80");
-                text.textContent = page + " is locked. Enter the access code to view the rest (view only).";
-                box.hidden = false;
+                title.textContent = btn.getAttribute("data-locked-page") + " is locked.";
+                modal.hidden = false;
+                document.getElementById("access-code")?.focus();
               });
             });
+            document.getElementById("locked-close")?.addEventListener("click", close);
+            modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+            document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+            if (new URLSearchParams(location.search).get("code") === "wrong") modal.hidden = false;
           })();
         </script>
 

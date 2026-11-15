@@ -3,4 +3,4 @@
 > A venue operations platform: bookings, calendar, billing, and a public booking form for The Factory in Franklin, TN.
 
 - [Booking request](/book): request an event at The Factory.
-- [Sample dashboard](/demo): a demo with made-up data.
+- [Admin sign-in](/admin/login): staff sign-in.

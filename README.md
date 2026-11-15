@@ -2,9 +2,9 @@
 
 > A personal full-stack project built for fun and the challenge — a complete venue operations platform deployed on the edge.
 
-## Live Demo
+## Live Site
 
-[View the interactive demo](https://venue-operations-api.dwirog.workers.dev/demo)
+https://venue-operations-api.dwirog.workers.dev (opens the admin; sign in to use it)
 
 ---
 
@@ -32,7 +32,6 @@
 - **RSVP** — token-based RSVP flow via QR code.
 - **Client portal** — client login and dashboard (in progress).
 - **Error pages** — branded 404 and 500 pages, plus a 403 access-denied page.
-- **Demo** — `/demo` shows a read-only sample dashboard and calendar with sample data, for showing the layout without touching live records.
 
 ### Data Model
 
@@ -99,7 +98,6 @@ Tests that write data are avoided. Anything that changes live Sanity data is run
 
 - **Accessibility:** about 32 of 40 pages still fail the WCAG color-contrast check, and some buttons and form fields need accessible names.
 - **Account information** shows only the role, not the signed-in user's name or email.
-- **Public `/demo` page** is still a sample dashboard with no login.
 - **Booking admin edit form** does not yet require a phone number.
 - **Sanity token:** the old hardcoded token appeared in git history. Rotate it in Sanity and keep the new one in `.env` only.
 

@@ -40,10 +40,9 @@ export interface Props {
   title: string;
   subtitle?: string;
   badge?: string;
-  demo?: boolean;
 }
 
-const { title, subtitle, badge, demo = false } = Astro.props;
+const { title, subtitle, badge } = Astro.props;
 
 // ── Fetch settings with error handling ──
 let settings;
@@ -169,15 +168,7 @@ const visibleNavGroups = isViewOnly
       .filter((group) => group.items.length > 0)
   : sidebarGroups;
 
-const navGroups = demo
-  ? visibleNavGroups.filter((group) => group.label !== "Insights" && group.label !== "Data").map((group) => ({
-      ...group,
-      items: group.items.map((item) => ({
-        ...item,
-        href: item.label === "Dashboard" ? "/demo" : null,
-      })),
-    }))
-  : visibleNavGroups;
+const navGroups = visibleNavGroups;
 
 // active group = whichever group contains the current page (default open)
 const activePath = Astro.url.pathname;
@@ -190,14 +181,7 @@ const activePath = Astro.url.pathname;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    {demo ? (
-      <>
-        <meta name="robots" content="index, follow" />
-        <meta name="description" content="Sample dashboard for Venue Operations: revenue, bookings, calendar, and payments, with made-up data." />
-      </>
-    ) : (
-      <meta name="robots" content="noindex, nofollow" />
-    )}
+    <meta name="robots" content="noindex, nofollow" />
     <script is:inline>
       // Display density: "comfortable" (default) or "compact". Per browser, read before paint.
       try {
@@ -666,59 +650,7 @@ const activePath = Astro.url.pathname;
 
         <nav class="flex-1 p-2 overflow-y-auto" aria-label="Main navigation">
           {
-            demo ? (
-              navGroups.map(({ label: groupLabel, items }) => (
-                groupLabel === "Core" ? (
-                  <div class="mb-1">
-                    <p class="px-2.5 py-1.5 text-[0.72rem] font-semibold uppercase tracking-widest sidebar-muted">
-                      {groupLabel}
-                    </p>
-                    <ul class="mt-0.5">
-                      {items.map(({ href, icon: Icon, label }) => (
-                        <li>
-                          {href ? (
-                            <a
-                              href={href}
-                              class="active flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition"
-                            >
-                              <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                              {label}
-                            </a>
-                          ) : (
-                            <span
-                              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs opacity-55 cursor-default select-none"
-                              aria-disabled="true"
-                            >
-                              <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                              {label}
-                            </span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <div
-                    class="flex items-center justify-between px-2.5 py-1.5 mb-1 text-[0.72rem] font-semibold uppercase tracking-widest sidebar-muted cursor-default select-none"
-                    aria-disabled="true"
-                  >
-                    {groupLabel}
-                    <svg
-                      class="w-3 h-3 shrink-0 -rotate-90"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      aria-hidden="true"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </div>
-                )
-              ))
-            ) : navGroups.map(({ label: groupLabel, items }) => (
+            navGroups.map(({ label: groupLabel, items }) => (
               <details
                 class="nav-group mb-1"
                 open={
@@ -770,17 +702,7 @@ const activePath = Astro.url.pathname;
         </nav>
 
         <footer class="p-4 sidebar-border-top shrink-0 space-y-1">
-          {demo ? (
-            <>
-              <span
-                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs opacity-55 cursor-default select-none"
-                aria-disabled="true"
-              >
-                <LogOut className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                Log Out
-              </span>
-            </>
-          ) : (
+          {(
             <>
                             <a
                 href="/admin/logout"
@@ -831,16 +753,7 @@ const activePath = Astro.url.pathname;
                   </svg>
                 </button>
               </div>
-              {demo ? (
-                <>
-                  <span class="rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-widest admin-muted" style="border-color: var(--admin-border);">
-                    Read-only demo
-                  </span>
-                  <a href="/admin/login" class="btn-primary rounded-md px-3 py-2 text-xs font-medium">
-                    Admin Login
-                  </a>
-                </>
-              ) : (
+              {(
               <>
               <!-- ── Global Search ── -->
               <div class="relative" id="global-search-wrap">

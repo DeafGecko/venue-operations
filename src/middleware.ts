@@ -12,7 +12,20 @@ function isAdminPath(pathname: string) {
 
 // Admin pages are for staff, not search engines. Every admin response, including redirects, is marked noindex.
 // Live build with DEMO_ONLY=true: only the demo and static files are served. Everything else goes to the demo.
+// The live address opens straight to the demo. Visitors who are not signed in cannot reach the admin
+// (they go to the demo instead); signing in at /admin/login still works.
+const LIVE_HOST = 'venue-operations-api.dwirog.workers.dev';
+
 export const onRequest = defineMiddleware(async (context, next) => {
+  const liveUrl = new URL(context.request.url);
+  if (liveUrl.hostname === LIVE_HOST) {
+    const path = liveUrl.pathname;
+    if (path === '/') return context.redirect('/demo');
+    const signedIn = (context.cookies.get('admin_session')?.value ?? '').startsWith('authenticated:');
+    const isAdminArea = path.startsWith('/admin') || path.startsWith('/api/admin');
+    const isLoginArea = path.startsWith('/admin/login') || path.startsWith('/api/admin/auth') || path.startsWith('/admin/forgot-password') || path.startsWith('/admin/reset-password');
+    if (isAdminArea && !isLoginArea && !signedIn) return context.redirect('/demo');
+  }
   if (!isAdminPath(new URL(context.request.url).pathname)) {
     return next();
   }

@@ -17,6 +17,8 @@ function isAdminPath(pathname: string) {
 const LIVE_HOST = 'venue-operations-api.dwirog.workers.dev';
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  // A plain /admin address opens the dashboard. (The bookings page is /admin/ with the trailing slash.)
+  if (new URL(context.request.url).pathname === '/admin') return context.redirect('/admin/dashboard');
   const liveUrl = new URL(context.request.url);
   if (liveUrl.hostname === LIVE_HOST) {
     const path = liveUrl.pathname;

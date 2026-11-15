@@ -190,7 +190,14 @@ const activePath = Astro.url.pathname;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="noindex, nofollow" />
+    {demo ? (
+      <>
+        <meta name="robots" content="index, follow" />
+        <meta name="description" content="Sample dashboard for Venue Operations: revenue, bookings, calendar, and payments, with made-up data." />
+      </>
+    ) : (
+      <meta name="robots" content="noindex, nofollow" />
+    )}
     <script is:inline>
       // Display density: "comfortable" (default) or "compact". Per browser, read before paint.
       try {
@@ -262,7 +269,7 @@ const activePath = Astro.url.pathname;
       }
 
       .sidebar-muted {
-        color: color-mix(in srgb, var(--admin-sidebar-text) 45%, transparent);
+        color: color-mix(in srgb, var(--admin-sidebar-text) 74%, transparent);
       }
 
       .sidebar-border-top {

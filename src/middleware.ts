@@ -27,7 +27,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const signedIn = !!(await verifySession(context.cookies.get('admin_session')?.value));
     const isAdminArea = path.startsWith('/admin') || path.startsWith('/api/admin');
     const isLoginArea = path.startsWith('/admin/login') || path.startsWith('/api/admin/auth') || path.startsWith('/admin/forgot-password') || path.startsWith('/admin/reset-password');
-    if (isAdminArea && !isLoginArea && !signedIn) return context.redirect('/demo');
+    if (isAdminArea && !isLoginArea && !signedIn) return context.redirect('/admin/login');
   }
   if (!isAdminPath(new URL(context.request.url).pathname)) {
     return next();

@@ -1,4 +1,6 @@
 ---
+// /demo now opens the admin dashboard (signed-out visitors are sent to sign-in).
+return Astro.redirect('/admin/dashboard');
 import {
   ArrowUpRight,
   CalendarCheck,

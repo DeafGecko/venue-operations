@@ -1,6 +1,6 @@
 name = "venue-operations-api"
 compatibility_date = "2025-03-01"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
 main = "dist/_worker.js/index.js"
 
 [assets]

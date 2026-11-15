@@ -1,5 +1,6 @@
 // src/pages/api/admin/auth.ts
 import type { APIRoute } from 'astro';
+import { runtimeEnv } from '../../../lib/runtime-env';
 import { sanityClient } from '../../../lib/sanity';
 import { verifyPassword } from '../../../lib/auth';
 
@@ -17,8 +18,8 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   }
 
   // ── Super-admin fallback (env-based, full access) ──
-  const superAdminEmail = (import.meta.env.SUPER_ADMIN_EMAIL || 'admin@venue.com').toLowerCase();
-  const superAdminPassword = import.meta.env.ADMIN_PASSWORD;
+  const superAdminEmail = (runtimeEnv('SUPER_ADMIN_EMAIL') || 'admin@venue.com').toLowerCase();
+  const superAdminPassword = runtimeEnv('ADMIN_PASSWORD');
   if (superAdminPassword && email === superAdminEmail && password === superAdminPassword) {
     return new Response(null, {
       status: 302,

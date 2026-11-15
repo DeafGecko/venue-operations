@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { runtimeEnv } from '../../../../lib/runtime-env';
 import { sanityClient } from '../../../../lib/sanity';
 
 export const GET: APIRoute = async () => {
@@ -160,9 +161,9 @@ export const POST: APIRoute = async ({ request }) => {
     const filename    = new URL(request.url).searchParams.get('filename') ?? 'avatar.jpg';
     const bytes       = await request.arrayBuffer();
 
-    const projectId = import.meta.env.SANITY_PROJECT_ID;
-    const dataset   = import.meta.env.SANITY_DATASET || 'production';
-    const token     = import.meta.env.SANITY_API_TOKEN;
+    const projectId = runtimeEnv('SANITY_PROJECT_ID');
+    const dataset   = runtimeEnv('SANITY_DATASET') || 'production';
+    const token     = runtimeEnv('SANITY_API_TOKEN');
 
     const res = await fetch(
       `https://api.sanity.io/v2024-05-23/assets/images/${projectId}/${dataset}?filename=${encodeURIComponent(filename)}`,

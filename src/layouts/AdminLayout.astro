@@ -688,15 +688,16 @@ const activePath = Astro.url.pathname;
                   {items.map(({ href, icon: Icon, label }) => (
                     <li>
                       {href && anonymousViewer && !PUBLIC_PAGES.includes(href) ? (
-                        <a
-                          href={`mailto:${ACCESS_EMAIL}?subject=${encodeURIComponent(`Access request: ${label}`)}`}
-                          title={`Request access to ${label}`}
-                          class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs opacity-40 hover:opacity-70 transition"
+                        <button
+                          type="button"
+                          data-locked-page={label}
+                          aria-describedby="locked-msg"
+                          class="w-full text-left flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs opacity-40 hover:opacity-70 transition"
                         >
                           <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                           {label}
-                          <span class="ml-auto text-[0.65rem] uppercase tracking-wide opacity-80">Request</span>
-                        </a>
+                          <span class="ml-auto text-[0.65rem] uppercase tracking-wide opacity-80">Locked</span>
+                        </button>
                       ) : href ? (
                         <a
                           href={href}
@@ -722,6 +723,29 @@ const activePath = Astro.url.pathname;
             ))
           }
         </nav>
+        <!-- Visitors: locked pages show a tint and a request message -->
+        <div id="locked-msg" role="status" hidden class="mx-2 mb-2 rounded-lg border border-white/15 bg-black/30 p-3 text-xs text-white/90">
+          <p id="locked-msg-text"></p>
+          <a id="locked-msg-mail" href="#" class="mt-2 inline-block underline">Email to request access code</a>
+        </div>
+        <script is:inline>
+          (() => {
+            const text = document.getElementById("locked-msg-text");
+            const box = document.getElementById("locked-msg");
+            const mail = document.getElementById("locked-msg-mail");
+            const EMAIL = "dwirog@gmail.com";
+            document.querySelectorAll("[data-locked-page]").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                const page = btn.getAttribute("data-locked-page");
+                document.querySelectorAll("[data-locked-page]").forEach((b) => b.classList.remove("ring-1", "ring-white/40"));
+                btn.classList.add("ring-1", "ring-white/40", "opacity-80");
+                text.textContent = page + " is locked. Contact " + EMAIL + " to request an access code to view the rest.";
+                mail.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Access code request: " + page);
+                box.hidden = false;
+              });
+            });
+          })();
+        </script>
 
         <footer class="p-4 sidebar-border-top shrink-0 space-y-1">
           {(

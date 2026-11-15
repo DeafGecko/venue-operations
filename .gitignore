@@ -23,7 +23,6 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 .wrangler/
-wrangler.toml
 .vscode/
 proposal.html
 

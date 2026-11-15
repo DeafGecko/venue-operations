@@ -1,0 +1,19 @@
+name = "venue-operations-api"
+compatibility_date = "2025-03-01"
+compatibility_flags = ["nodejs_compat"]
+main = "dist/_worker.js/index.js"
+
+[assets]
+directory = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "venue-operations-d1"
+database_id = "23e71458-17d2-491a-b725-ee2075043ab5"
+
+# Secrets (SANITY_API_TOKEN, RESEND_API_KEY, ADMIN_PASSWORD, SUPER_ADMIN_EMAIL, FROM_EMAIL)
+# are set in the Cloudflare dashboard, not here.
+[vars]
+SANITY_PROJECT_ID = "mzqx3hwz"
+SANITY_DATASET = "production"
+PUBLIC_BASE_URL = "https://venue-operations-api.dwirog.workers.dev"

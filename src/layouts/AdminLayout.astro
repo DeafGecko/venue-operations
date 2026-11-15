@@ -728,7 +728,7 @@ const activePath = Astro.url.pathname;
         <div id="locked-msg" hidden class="fixed inset-0 z-[9000] flex items-center justify-center bg-black/60 p-4" role="presentation">
           <div role="dialog" aria-modal="true" aria-labelledby="locked-title" class="w-full max-w-sm rounded-xl bg-white p-6 text-[#111827] shadow-2xl">
             <h2 id="locked-title" class="text-sm font-semibold"></h2>
-            <p class="mt-2 text-sm text-[#374151]">Required: contact the developer to get an access code from the developer to view the rest.</p>
+            <p class="mt-2 text-sm text-[#374151]">Contact the developer to receive an access code to view the rest.</p>
             <form method="POST" action="/api/access-code" class="mt-4 space-y-2">
               <label for="access-code" class="block text-xs font-semibold uppercase tracking-wide text-[#6b7280]">Access code</label>
               <div class="flex gap-2">
@@ -747,7 +747,7 @@ const activePath = Astro.url.pathname;
             const close = () => { modal.hidden = true; };
             document.querySelectorAll("[data-locked-page]").forEach((btn) => {
               btn.addEventListener("click", () => {
-                title.textContent = btn.getAttribute("data-locked-page") + " is locked";
+                title.textContent = btn.getAttribute("data-locked-page") + " is locked.";
                 modal.hidden = false;
                 document.getElementById("access-code")?.focus();
               });

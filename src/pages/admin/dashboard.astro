@@ -114,10 +114,10 @@ const upcomingWeek = bookings.filter((b: any) => {
 const clientsWithBookings = new Set(bookings.map((b: any) => b.clientId).filter(Boolean)).size;
 
 const toneBox = {
-        emerald: 'bg-emerald-50 text-emerald-600',
+        emerald: 'bg-emerald-50 text-emerald-700',
         blue: 'bg-blue-50 text-blue-600',
         violet: 'bg-violet-50 text-violet-600',
-        amber: 'bg-amber-50 text-amber-600',
+        amber: 'bg-amber-50 text-amber-700',
 };
 
 const stats = [
@@ -126,22 +126,22 @@ const stats = [
     tone: 'emerald',
     note: revChange === null ? 'no last-month data' : `vs. last month`,
     delta: revChange === null ? '' : `${revChange >= 0 ? '+' : ''}${revChange}%`,
-    deltaTone: revChange === null || revChange >= 0 ? 'text-emerald-600' : 'text-red-600',
+    deltaTone: revChange === null || revChange >= 0 ? 'text-emerald-700' : 'text-red-600',
   },
   {
     label: 'Bookings', value: totalBookings, icon: CalendarDays, href: '/admin/?from=dashboard',
     tone: 'blue',
-    delta: `+${newThisMonth}`, deltaTone: 'text-emerald-600', note: 'new this month',
+    delta: `+${newThisMonth}`, deltaTone: 'text-emerald-700', note: 'new this month',
   },
   {
     label: 'Upcoming', value: upcoming, icon: CalendarCheck, href: '/admin/calendar?from=dashboard',
     tone: 'violet',
-    delta: `${upcomingWeek}`, deltaTone: 'text-emerald-600', note: 'in the next 7 days',
+    delta: `${upcomingWeek}`, deltaTone: 'text-emerald-700', note: 'in the next 7 days',
   },
   {
     label: 'Clients', value: totalClients, icon: Users, href: '/admin/clients?from=dashboard',
     tone: 'amber',
-    delta: `${clientsWithBookings}`, deltaTone: 'text-emerald-600', note: 'with a booking',
+    delta: `${clientsWithBookings}`, deltaTone: 'text-emerald-700', note: 'with a booking',
   },
 ];
 ---
@@ -157,7 +157,7 @@ const stats = [
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
     {stats.map(({ label, value, icon: Icon, href, tone, delta, deltaTone, note }) => {
       return (
-        <a href={href} aria-label={`${label}: ${value}. Open`} class="bg-white rounded-2xl px-8 py-5 shadow-sm hover:shadow-md transition">
+        <a href={href} class="bg-white rounded-2xl px-8 py-5 shadow-sm hover:shadow-md transition">
           <div class="flex items-start justify-between">
             <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">{label}</p>
           </div>
@@ -200,7 +200,7 @@ const stats = [
         ))}
       </ul>
       <div class="px-10 py-4 bg-[#f7f8fa] border-t border-[#e5e7eb] flex items-center gap-2 text-xs text-[#374151]">
-        <CheckCircle2 className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+        <CheckCircle2 className="w-4 h-4 text-emerald-700" aria-hidden="true" />
         {actionQueue.length} balance{actionQueue.length === 1 ? '' : 's'} to collect
       </div>
     </div>
@@ -253,7 +253,7 @@ const stats = [
     <div class="bg-[#111827] text-white rounded-2xl shadow-sm overflow-hidden">
       <div class="p-10 flex items-start justify-between gap-3">
         <div>
-          <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#9ca3af]">Today at the venue</p>
+          <p class="text-[0.72rem] font-semibold uppercase tracking-widest text-[#6b7280]">Today at the venue</p>
           <p class="mt-1 text-sm text-[#d1d5db]">Live run sheet</p>
         </div>
         <div class="flex items-center gap-2">
@@ -272,13 +272,13 @@ const stats = [
         return (
           <div data-range={key} hidden={key !== 'today'} class="px-10 pb-10">
             {!featured ? (
-              <p class="py-10 text-center text-xs text-[#9ca3af]">{key === 'today' ? 'No events today.' : key === 'tomorrow' ? 'No events tomorrow.' : 'No events this week.'}</p>
+              <p class="py-10 text-center text-xs text-[#6b7280]">{key === 'today' ? 'No events today.' : key === 'tomorrow' ? 'No events tomorrow.' : 'No events this week.'}</p>
             ) : (
               <>
                 <div class="flex items-start justify-between gap-3 pt-2">
                   <div class="min-w-0">
                     <button type="button" data-open-booking={JSON.stringify(detail(featured))} class="text-left text-xl font-semibold text-white truncate rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white">{featured.clientName}</button>
-                    <p class="mt-0.5 text-sm text-[#9ca3af] truncate">{featured.eventType || 'Event'} · {featured.accountNumber}</p>
+                    <p class="mt-0.5 text-sm text-[#6b7280] truncate">{featured.eventType || 'Event'} · {featured.accountNumber}</p>
                   </div>
                   <span class="shrink-0 rounded-md bg-white/10 px-2.5 py-1 text-xs font-semibold">{paidPct}% paid</span>
                 </div>
@@ -291,7 +291,7 @@ const stats = [
                   <div class="h-full rounded-full bg-gradient-to-r from-sky-400 to-emerald-400" style={`width:${paidPct}%`} />
                 </div>
                 <div class="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-sm">
-                  <span class="text-[#9ca3af]">Contact</span>
+                  <span class="text-[#6b7280]">Contact</span>
                   <span class="text-white">{featured.phone || '—'}</span>
                 </div>
                 {list.length > 1 && (
@@ -300,7 +300,7 @@ const stats = [
                       <li>
                         <button type="button" data-open-booking={JSON.stringify(detail(b))} class="w-full flex items-center justify-between rounded-md px-2 py-1.5 text-left text-sm text-[#d1d5db] hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                           <span class="truncate">{b.clientName}</span>
-                          <span class="text-xs text-[#9ca3af]">{b.startTime || ''}</span>
+                          <span class="text-xs text-[#6b7280]">{b.startTime || ''}</span>
                         </button>
                       </li>
                     ))}
@@ -326,7 +326,7 @@ const stats = [
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="bg-[#f7f8fa] text-left text-[0.65rem] font-semibold uppercase tracking-widest text-[#9ca3af]">
+          <tr class="bg-[#f7f8fa] text-left text-[0.65rem] font-semibold uppercase tracking-widest text-[#6b7280]">
             <th scope="col" class="px-5 py-2.5 font-semibold">Booking</th>
             <th scope="col" class="px-5 py-2.5 font-semibold">Event</th>
             <th scope="col" class="px-5 py-2.5 font-semibold">Date</th>
@@ -345,7 +345,7 @@ const stats = [
                 <td class="px-5 py-4">
                   <button type="button" data-open-booking={JSON.stringify(detail(b))} class="text-left rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#374151]">
                     <span class="block font-semibold text-[#111827]">{b.clientName}</span>
-                    <span class="block text-xs text-[#9ca3af]">{b.accountNumber}</span>
+                    <span class="block text-xs text-[#6b7280]">{b.accountNumber}</span>
                   </button>
                 </td>
                 <td class="px-5 py-4 text-[#4b5563]">{b.eventType ? b.eventType.charAt(0).toUpperCase() + b.eventType.slice(1) : 'Event'}</td>
@@ -457,7 +457,7 @@ const stats = [
           $("bd-paid").textContent = money(b.amountPaid);
           const balance = Math.max((b.totalPrice || 0) - (b.amountPaid || 0), 0);
           $("bd-balance").textContent = money(balance);
-          $("bd-balance").className = balance > 0 ? "text-red-600" : "text-emerald-600";
+          $("bd-balance").className = balance > 0 ? "text-red-600" : "text-emerald-700";
           $("bd-status").value = b.paymentStatus;
           $("bd-msg").textContent = "";
           $("bd-open").href = `/admin/edit/${b._id}?from=dashboard`;

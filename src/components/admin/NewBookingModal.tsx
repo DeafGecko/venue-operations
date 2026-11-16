@@ -159,7 +159,7 @@ export default function NewBookingModal({ open, onClose }: { open: boolean; onCl
             </div>
             <div>
               <Label>Balance</Label>
-              <p className={`pt-1.5 text-sm font-semibold ${balance > 0 ? 'text-red-600' : 'text-emerald-600'}`}>${formatMoney(balance)}</p>
+              <p className={`pt-1.5 text-sm font-semibold ${balance > 0 ? 'text-red-600' : 'text-emerald-700'}`}>${formatMoney(balance)}</p>
             </div>
           </div>
 

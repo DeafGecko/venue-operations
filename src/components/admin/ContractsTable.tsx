@@ -32,10 +32,10 @@ const TYPE_CONFIG: Record<ContractType, { label: string; color: string }> = {
 };
 
 const STATUS_CONFIG: Record<ContractStatus, { label: string; color: string; icon: React.ReactNode }> = {
-  draft:     { label: 'Draft',     color: 'bg-gray-400 text-white',        icon: <FileText className="w-3 h-3" /> },
-  sent:      { label: 'Sent',      color: 'bg-blue-500 text-white',        icon: <Clock className="w-3 h-3" /> },
-  signed:    { label: 'Signed',    color: 'bg-emerald-500 text-white',     icon: <CheckCircle className="w-3 h-3" /> },
-  expired:   { label: 'Expired',   color: 'bg-amber-500 text-white',       icon: <AlertTriangle className="w-3 h-3" /> },
+  draft:     { label: 'Draft',     color: 'bg-gray-600 text-white',        icon: <FileText className="w-3 h-3" /> },
+  sent:      { label: 'Sent',      color: 'bg-blue-600 text-white',        icon: <Clock className="w-3 h-3" /> },
+  signed:    { label: 'Signed',    color: 'bg-emerald-700 text-white',     icon: <CheckCircle className="w-3 h-3" /> },
+  expired:   { label: 'Expired',   color: 'bg-amber-700 text-white',       icon: <AlertTriangle className="w-3 h-3" /> },
   cancelled: { label: 'Cancelled', color: 'bg-red-400 text-white',         icon: <XCircle className="w-3 h-3" /> },
 };
 
@@ -527,12 +527,12 @@ export default function ContractsTable() {
                     </td>
                     <td className="px-4 py-3">
                       <StatusPill status={c.status} />
-                      {expiring && <p className="text-[0.72rem] text-amber-600 mt-0.5 font-medium">Expiring soon</p>}
+                      {expiring && <p className="text-[0.72rem] text-amber-700 mt-0.5 font-medium">Expiring soon</p>}
                     </td>
                     <td className="px-4 py-3 text-xs text-[#6b7280] space-y-0.5">
                       {c.startDate && <p>Start: {new Date(c.startDate).toLocaleDateString()}</p>}
-                      {c.endDate   && <p className={expired ? 'text-red-500 font-medium' : ''}>End: {new Date(c.endDate).toLocaleDateString()}</p>}
-                      {c.signedAt  && <p className="text-emerald-600">Signed: {new Date(c.signedAt).toLocaleDateString()}</p>}
+                      {c.endDate   && <p className={expired ? 'text-red-600 font-medium' : ''}>End: {new Date(c.endDate).toLocaleDateString()}</p>}
+                      {c.signedAt  && <p className="text-emerald-700">Signed: {new Date(c.signedAt).toLocaleDateString()}</p>}
                     </td>
                     <td className="px-4 py-3">
                       {c.pdfUrl ? (
@@ -568,7 +568,7 @@ export default function ContractsTable() {
                           <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button type="button" title="Delete" onClick={() => handleDelete(c._id, c.title)}
-                          className="p-1.5 rounded-md text-[#6b7280] hover:text-red-500 hover:bg-red-50 transition">
+                          className="p-1.5 rounded-md text-[#6b7280] hover:text-red-600 hover:bg-red-50 transition">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>

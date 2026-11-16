@@ -27,9 +27,9 @@ const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => (
 );
 
 const statusStyle: Record<string, string> = {
-  active:  'bg-emerald-500 text-white',
-  expired: 'bg-red-500 text-white',
-  pending: 'bg-amber-500 text-white',
+  active:  'bg-emerald-700 text-white',
+  expired: 'bg-red-600 text-white',
+  pending: 'bg-amber-700 text-white',
 };
 
 const leaseStatus = (tenant: Tenant): 'active' | 'expired' | 'pending' => {
@@ -107,11 +107,11 @@ export default function TenantsTable() {
               className="w-full pl-8 pr-3 py-1.5 border border-[#e5e7eb] rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#374151]" />
           </div>
           <div className="flex items-center gap-2 text-xs text-[#6b7280]">
-            <span className="text-emerald-600">{tenants.filter(t => leaseStatus(t) === 'active').length} active</span>
+            <span className="text-emerald-700">{tenants.filter(t => leaseStatus(t) === 'active').length} active</span>
             <span>·</span>
-            <span className="text-red-500">{tenants.filter(t => leaseStatus(t) === 'expired').length} expired</span>
+            <span className="text-red-600">{tenants.filter(t => leaseStatus(t) === 'expired').length} expired</span>
             <span>·</span>
-            <span className="text-amber-500">{tenants.filter(t => leaseStatus(t) === 'pending').length} pending</span>
+            <span className="text-amber-700">{tenants.filter(t => leaseStatus(t) === 'pending').length} pending</span>
           </div>
           <button type="button" onClick={openAdd} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md btn-primary text-xs transition">
             <Plus className="w-3.5 h-3.5" /> Add Tenant

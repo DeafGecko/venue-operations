@@ -115,14 +115,14 @@ export default function VendorsTable() {
                   <td className="px-4 py-3 text-sm font-medium text-[#111827]">{v.name}</td>
                   <td className="px-4 py-3 text-sm text-[#6b7280]">{v.contact || '—'}</td>
                   <td className="px-4 py-3">
-                    {v.serviceType ? <span className="inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.72rem] font-medium bg-blue-500 text-white">{serviceLabel(v.serviceType)}</span> : '—'}
+                    {v.serviceType ? <span className="inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.72rem] font-medium bg-blue-600 text-white">{serviceLabel(v.serviceType)}</span> : '—'}
                   </td>
                   <td className="px-4 py-3 text-sm text-[#6b7280]">{v.email}</td>
                   <td className="px-4 py-3 text-sm text-[#6b7280]">{v.phone || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
-                      <button type="button" onClick={() => openEdit(v)} className="p-1.5 rounded-md text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6] transition"><Edit className="w-3.5 h-3.5" /></button>
-                      <button type="button" onClick={() => setDeleteTarget(v)} className="p-1.5 rounded-md text-[#6b7280] hover:text-red-600 hover:bg-red-50 transition"><Trash2 className="w-3.5 h-3.5" /></button>
+                      <button type="button" aria-label="Edit" onClick={() => openEdit(v)} className="p-1.5 rounded-md text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6] transition"><Edit className="w-3.5 h-3.5" /></button>
+                      <button type="button" aria-label="Delete" onClick={() => setDeleteTarget(v)} className="p-1.5 rounded-md text-[#6b7280] hover:text-red-600 hover:bg-red-50 transition"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
                   </td>
                 </tr>

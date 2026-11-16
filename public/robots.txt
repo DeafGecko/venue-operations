@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /book
-Disallow: /admin
-Disallow: /api/admin
-
-Sitemap: https://venue-operations-api.dwirog.workers.dev/sitemap.xml

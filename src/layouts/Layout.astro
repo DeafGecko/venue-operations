@@ -1,19 +1,15 @@
 ---
 import '../styles/global.css';
+import { DEFAULT_DESCRIPTION, SITE_URL } from '../lib/seo';
 
 export interface Props {
   title: string;
   description?: string;
   noindex?: boolean;
 }
-const {
-  title,
-  description = 'The Factory event venue in Franklin, TN. Request a booking for your wedding, corporate event, birthday, or conference.',
-  noindex = false,
-} = Astro.props;
+const { title, description = DEFAULT_DESCRIPTION, noindex = false } = Astro.props;
 
-// Public address of the site, used for canonical and social links.
-const SITE_URL = 'https://venue-operations-api.dwirog.workers.dev';
+// Canonical and social links point at the public address of the site.
 const canonical = new URL(Astro.url.pathname, SITE_URL).href;
 
 // Structured data so search engines can show the venue as a place.

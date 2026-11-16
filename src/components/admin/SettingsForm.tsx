@@ -454,7 +454,7 @@ export default function SettingsForm() {
             <button
               type="button"
               onClick={() => setSettings(p => ({ ...p!, logo: null }))}
-              className="mt-1 text-[0.72rem] text-red-500 hover:text-red-700"
+              className="mt-1 text-[0.72rem] text-red-600 hover:text-red-700"
             >
               Remove logo
             </button>
@@ -476,7 +476,7 @@ export default function SettingsForm() {
             <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
           </label>
           {settings.adminAvatar && (
-            <button type="button" onClick={() => setSettings((p) => ({ ...p!, adminAvatar: undefined }))} className="text-xs text-red-500 hover:text-red-700">Remove</button>
+            <button type="button" onClick={() => setSettings((p) => ({ ...p!, adminAvatar: undefined }))} className="text-xs text-red-600 hover:text-red-700">Remove</button>
           )}
         </div>
       </div>
@@ -498,6 +498,7 @@ export default function SettingsForm() {
               />
               <Input
                 name={id}
+                aria-label={`${label} hex code`}
                 value={settings[id as keyof Settings] as string || ''}
                 onChange={handleChange}
                 className="font-mono text-xs"

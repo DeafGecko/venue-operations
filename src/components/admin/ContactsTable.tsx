@@ -137,7 +137,7 @@ const SOURCE_COLORS: Record<SourceType, string> = {
 
 // ── Status configuration ──────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<ContactStatus, { label: string; dot: string; pill: string }> = {
-  active:    { label: 'Active',   dot: 'bg-emerald-500', pill: 'bg-emerald-500 text-white border-emerald-500' },
+  active:    { label: 'Active',   dot: 'bg-emerald-500', pill: 'bg-emerald-700 text-white border-emerald-500' },
   inactive:  { label: 'Inactive', dot: 'bg-red-400',     pill: 'bg-red-400 text-white border-red-400' },
   'on-hold': { label: 'On Hold',  dot: 'bg-amber-400',   pill: 'bg-amber-400 text-white border-amber-400' },
 };
@@ -315,10 +315,10 @@ type DrawerContract = {
 };
 
 const CONTRACT_STATUS_PILL: Record<string, string> = {
-  draft:     'bg-gray-400 text-white',
-  sent:      'bg-blue-500 text-white',
-  signed:    'bg-emerald-500 text-white',
-  expired:   'bg-amber-500 text-white',
+  draft:     'bg-gray-600 text-white',
+  sent:      'bg-blue-600 text-white',
+  signed:    'bg-emerald-700 text-white',
+  expired:   'bg-amber-700 text-white',
   cancelled: 'bg-red-400 text-white',
 };
 
@@ -706,7 +706,7 @@ function ContactDrawer({ contact, onClose, onSave }: {
               return (
                 <button key={s} type="button" onClick={() => setStatus(s)}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition ${
-                    status === s ? sc.pill : 'text-[#6b7280] hover:bg-[#f9fafb]'
+                    status === s ? sc.pill : 'text-[#4b5563] hover:bg-[#f9fafb]'
                   }`}
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} /> {sc.label}
@@ -868,12 +868,12 @@ export default function ContactsTable() {
                 filterStatus === s
                   ? s === 'all' ? 'btn-primary border-transparent'
                     : STATUS_CONFIG[s as ContactStatus].pill + ' border'
-                  : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
+                  : 'border-[#e5e7eb] text-[#4b5563] hover:bg-[#f9fafb]'
               }`}
             >
               {s !== 'all' && <span className={`w-1.5 h-2 rounded-full ${STATUS_CONFIG[s as ContactStatus].dot}`} />}
               {s === 'all' ? 'All' : STATUS_CONFIG[s as ContactStatus].label}
-              <span className="ml-0.5 opacity-60">{counts[s]}</span>
+              <span className="ml-0.5">{counts[s]}</span>
             </button>
           ))}
         </div>
@@ -902,7 +902,7 @@ export default function ContactsTable() {
 {/* A–Z bar */}
         <div className="flex flex-wrap gap-0.5">
           <button type="button" onClick={() => setActiveLetter(null)}
-            className={`px-2 py-0.5 rounded text-xs font-medium transition ${
+            className={`min-h-6 px-2 py-0.5 rounded text-xs font-medium transition ${
               activeLetter === null ? 'btn-primary' : 'text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6]'
             }`}
           >All</button>
@@ -911,7 +911,7 @@ export default function ContactsTable() {
             return (
               <button key={letter} type="button" disabled={!has}
                 onClick={() => { setActiveLetter(l => l === letter ? null : letter); setSearch(''); }}
-                className={`w-6 py-0.5 rounded text-xs font-medium transition ${
+                className={`w-6 h-6 rounded text-xs font-medium transition ${
                   activeLetter === letter ? 'btn-primary'
                     : has ? 'text-[#374151] hover:bg-[#f3f4f6]' : 'text-[#d1d5db] cursor-default'
                 }`}
@@ -962,7 +962,7 @@ export default function ContactsTable() {
                       <Avatar name={c.name || '?'} url={c.avatarUrl} />
                       <div className="min-w-0">
                         <p className={`text-xs font-medium truncate ${dnc ? 'text-red-600 dark:text-red-400 line-through' : 'text-[#111827]'}`}>{c.name || '—'}</p>
-                        {dnc && <p className="text-[0.72rem] font-medium text-red-500 dark:text-red-400">⛔ Do Not Contact</p>}
+                        {dnc && <p className="text-[0.72rem] font-medium text-red-600 dark:text-red-400">⛔ Do Not Contact</p>}
                         {c.roles[0]?.accountNumber && (
                           <p className="text-[0.72rem] text-[#6b7280] font-mono">{c.roles[0].accountNumber}</p>
                         )}

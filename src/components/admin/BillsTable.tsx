@@ -30,10 +30,10 @@ const deriveStatus = (totalPrice: number, amountPaid: number): string => {
 };
 
 const statusStyle = (s: string) =>
-  s === 'paid'    ? 'bg-emerald-500 text-white' :
-  s === 'partial' ? 'bg-amber-500 text-white' :
-  s === 'credit'  ? 'bg-blue-500 text-white' :
-                    'bg-red-500 text-white';
+  s === 'paid'    ? 'bg-emerald-700 text-white' :
+  s === 'partial' ? 'bg-amber-700 text-white' :
+  s === 'credit'  ? 'bg-blue-600 text-white' :
+                    'bg-red-600 text-white';
 
 const statusLabel = (s: string) =>
   s === 'paid'    ? 'Paid' :
@@ -132,8 +132,8 @@ export default function BillsTable({ initialBookings }: Props) {
       <div className="px-3 py-2.5 border-b border-[#e5e7eb] flex flex-wrap items-center justify-between gap-2 shrink-0">
         <div className="flex-1" />
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-emerald-600 font-medium">{counts.paid} paid</span>
-          <span className="text-amber-600 font-medium">{counts.partial} partial</span>
+          <span className="text-emerald-700 font-medium">{counts.paid} paid</span>
+          <span className="text-amber-700 font-medium">{counts.partial} partial</span>
           <span className="text-red-600 font-medium">{counts.unpaid} unpaid</span>
           {counts.credit > 0 && <span className="text-blue-600 font-medium">{counts.credit} owe refund</span>}
         </div>
@@ -179,7 +179,7 @@ export default function BillsTable({ initialBookings }: Props) {
               return (
                 <tr key={b._id} className="hover:bg-[#fafafa] transition">
                   <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">
-                    {b.accountNumber || <span className="text-amber-500 italic">unassigned</span>}
+                    {b.accountNumber || <span className="text-amber-700 italic">unassigned</span>}
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-sm font-medium text-[#111827] leading-tight">{b.clientName}</p>
@@ -190,7 +190,7 @@ export default function BillsTable({ initialBookings }: Props) {
                   </td>
                   <td className="px-4 py-3 text-xs font-medium text-[#111827]">${formatMoney(b.totalPrice || 0)}</td>
                   <td className="px-4 py-3 text-xs text-[#6b7280]">${formatMoney(b.amountPaid || 0)}</td>
-                  <td className={`px-4 py-3 text-xs font-medium ${balance > 0 ? 'text-red-600' : balance < 0 ? 'text-blue-600' : 'text-emerald-600'}`}>
+                  <td className={`px-4 py-3 text-xs font-medium ${balance > 0 ? 'text-red-600' : balance < 0 ? 'text-blue-600' : 'text-emerald-700'}`}>
                     ${formatMoney(balance)}
                   </td>
                   <td className="px-4 py-3">
@@ -222,7 +222,7 @@ export default function BillsTable({ initialBookings }: Props) {
                           ? () => handleMarkRefunded(b._id)
                           : () => { setRecordingId(b._id); setPaymentAmount(balance > 0 ? balance : 0); setError(null); }}
                         disabled={effectiveStatus === 'paid'}
-                        className={`w-full h-7 rounded-md text-xs font-medium transition ${effectiveStatus === 'unpaid' || effectiveStatus === 'partial' ? 'btn-primary' : effectiveStatus === 'credit' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-[#f3f4f6] text-[#6b7280] cursor-not-allowed'}`}>
+                        className={`w-full h-7 rounded-md text-xs font-medium transition ${effectiveStatus === 'unpaid' || effectiveStatus === 'partial' ? 'btn-primary' : effectiveStatus === 'credit' ? 'bg-blue-600 text-white hover:bg-blue-600' : 'bg-[#f3f4f6] text-[#6b7280] cursor-not-allowed'}`}>
                         {effectiveStatus === 'paid' ? 'Fully Paid' : effectiveStatus === 'credit' ? 'Mark Refunded' : 'Record Payment'}
                       </button>
                     )}
@@ -236,7 +236,7 @@ export default function BillsTable({ initialBookings }: Props) {
               <td colSpan={3} className="px-4 py-3 text-xs font-semibold text-[#374151]">Totals</td>
               <td className="px-4 py-3 text-xs font-semibold text-[#111827]">${formatMoney(totalRevenue)}</td>
               <td className="px-4 py-3 text-xs font-semibold text-[#111827]">${formatMoney(totalPaid)}</td>
-              <td className={`px-4 py-3 text-xs font-semibold ${totalOutstanding > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+              <td className={`px-4 py-3 text-xs font-semibold ${totalOutstanding > 0 ? 'text-red-600' : 'text-emerald-700'}`}>
                 ${formatMoney(totalOutstanding)}
               </td>
               <td colSpan={2} />

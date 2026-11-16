@@ -38,15 +38,15 @@ const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => (
 );
 
 const statusStyle: Record<string, string> = {
-  active:   'bg-emerald-500 text-white',
+  active:   'bg-emerald-700 text-white',
   inactive: 'bg-[#6b7280] text-white',
-  'on-call': 'bg-amber-500 text-white',
+  'on-call': 'bg-amber-700 text-white',
 };
 
 const roleStyle: Record<string, string> = {
   manager:    'bg-purple-500 text-white',
-  employee:   'bg-blue-500 text-white',
-  contractor: 'bg-orange-500 text-white',
+  employee:   'bg-blue-600 text-white',
+  contractor: 'bg-orange-700 text-white',
   volunteer:  'bg-teal-500 text-white',
 };
 
@@ -151,7 +151,7 @@ export default function StaffTable() {
           <div className="flex items-center gap-1">
             {['all', ...ROLES].map(r => (
               <button key={r} type="button" onClick={() => setFilterRole(r)}
-                className={`h-8 px-3 rounded-md text-xs font-medium transition capitalize ${filterRole === r ? 'btn-primary' : 'border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f3f4f6]'}`}>
+                className={`h-8 px-3 rounded-md text-xs font-medium transition capitalize ${filterRole === r ? 'btn-primary' : 'border border-[#e5e7eb] text-[#4b5563] hover:bg-[#f3f4f6]'}`}>
                 {r === 'all' ? `All (${staff.length})` : r}
               </button>
             ))}
@@ -165,8 +165,8 @@ export default function StaffTable() {
 
         {/* Status summary */}
         <div className="px-4 py-1.5 flex items-center gap-4 text-xs shrink-0" style={{ borderBottom: '1px solid var(--admin-border)' }}>
-          <span className="text-emerald-600 font-medium">{counts.active} active</span>
-          <span className="text-amber-600 font-medium">{counts['on-call']} on-call</span>
+          <span className="text-emerald-700 font-medium">{counts.active} active</span>
+          <span className="text-amber-700 font-medium">{counts['on-call']} on-call</span>
           <span className="text-[#6b7280]">{counts.inactive} inactive</span>
         </div>
 
@@ -202,8 +202,8 @@ export default function StaffTable() {
                   <td className="px-4 py-3 text-xs text-[#6b7280] hidden lg:table-cell">{s.department || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="space-y-0.5">
-                      {s.email && <a href={`mailto:${s.email}`} className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#374151]"><Mail className="w-3 h-3" />{s.email}</a>}
-                      {s.phone && <a href={`tel:${s.phone}`} className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#374151]"><Phone className="w-3 h-3" />{s.phone}</a>}
+                      {s.email && <a href={`mailto:${s.email}`} className="inline-flex min-h-6 items-center gap-1 text-xs text-[#6b7280] hover:text-[#374151]"><Mail className="w-3 h-3" />{s.email}</a>}
+                      {s.phone && <a href={`tel:${s.phone}`} className="inline-flex min-h-6 items-center gap-1 text-xs text-[#6b7280] hover:text-[#374151]"><Phone className="w-3 h-3" />{s.phone}</a>}
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -213,7 +213,7 @@ export default function StaffTable() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-xs text-[#6b7280] hidden md:table-cell">
-                    {s.scheduleType === 'on-call' ? <span className="text-amber-600 font-medium">On-Call</span>
+                    {s.scheduleType === 'on-call' ? <span className="text-amber-700 font-medium">On-Call</span>
                       : (s.shiftStart && s.shiftEnd) ? `${s.shiftStart} – ${s.shiftEnd}` : '—'}
                   </td>
                   <td className="px-4 py-3">
@@ -257,7 +257,7 @@ export default function StaffTable() {
               <button type="button" onClick={handleDelete}
                 className="flex-1 h-8 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition">Delete</button>
               <button type="button" onClick={() => setDeleteTarget(null)}
-                className="flex-1 h-8 rounded-md border border-[#e5e7eb] text-sm text-[#6b7280] hover:bg-[#f3f4f6] transition">Cancel</button>
+                className="flex-1 h-8 rounded-md border border-[#e5e7eb] text-sm text-[#4b5563] hover:bg-[#f3f4f6] transition">Cancel</button>
             </div>
           </div>
         </div>
@@ -320,7 +320,7 @@ export default function StaffTable() {
                 <div className="flex gap-1 flex-wrap mt-0.5">
                   {DAYS.map(d => (
                     <button key={d} type="button" onClick={() => toggleDay(d)}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium border transition ${form.workDays?.includes(d) ? 'btn-primary' : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f3f4f6]'}`}>
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium border transition ${form.workDays?.includes(d) ? 'btn-primary' : 'border-[#e5e7eb] text-[#4b5563] hover:bg-[#f3f4f6]'}`}>
                       {d}
                     </button>
                   ))}
@@ -351,7 +351,7 @@ export default function StaffTable() {
                   {saving ? 'Saving…' : editing ? 'Save Changes' : 'Add Staff Member'}
                 </button>
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="px-4 h-8 rounded-md border border-[#e5e7eb] text-sm text-[#6b7280] hover:bg-[#f3f4f6] transition">
+                  className="px-4 h-8 rounded-md border border-[#e5e7eb] text-sm text-[#4b5563] hover:bg-[#f3f4f6] transition">
                   Cancel
                 </button>
               </div>

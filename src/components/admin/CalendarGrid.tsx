@@ -401,10 +401,10 @@ export default function CalendarGrid({ bookings }: Props) {
                   <span className="text-[var(--cal-muted)]">Status</span>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         selectedBooking.paymentStatus === 'paid'
-                              ? 'bg-emerald-500 text-white'
+                              ? 'bg-emerald-700 text-white'
                               : selectedBooking.paymentStatus === 'partial'
-                              ? 'bg-amber-500 text-white'
-                              : 'bg-red-500 text-white'
+                              ? 'bg-amber-700 text-white'
+                              : 'bg-red-600 text-white'
                         }`}>
                               {getStatusLabel(selectedBooking.paymentStatus)}
                   </span>
@@ -445,7 +445,7 @@ export default function CalendarGrid({ bookings }: Props) {
                               </div>
                               <div className="flex justify-between py-1 font-medium">
                                     <span className="text-[var(--cal-muted)]">Balance due</span>
-                                    <span className={balance > 0 ? 'text-red-600' : 'text-emerald-600'}>${formatMoney(balance)}</span>
+                                    <span className={balance > 0 ? 'text-red-600' : 'text-emerald-700'}>${formatMoney(balance)}</span>
                               </div>
                               <div className="flex flex-wrap gap-2 pt-2">
                                     {b.email && !viewOnly && (
@@ -512,7 +512,7 @@ export default function CalendarGrid({ bookings }: Props) {
             </div>
             <PaymentGroup
               title={payFilter.charAt(0).toUpperCase() + payFilter.slice(1)}
-              tone={payFilter === 'paid' ? 'text-emerald-600' : payFilter === 'partial' ? 'text-amber-600' : 'text-red-600'}
+              tone={payFilter === 'paid' ? 'text-emerald-700' : payFilter === 'partial' ? 'text-amber-700' : 'text-red-600'}
               list={payFilter === 'paid' ? paidList : payFilter === 'partial' ? partialList : unpaidList}
             />
           </aside>

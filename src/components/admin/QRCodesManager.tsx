@@ -236,7 +236,7 @@ export default function QRCodesManager() {
                       </button>
                       <button onClick={() => copyLink(qr.token)}
                         className="flex-1 h-7 flex items-center justify-center gap-1 border border-[#e5e7eb] rounded text-[0.72rem] text-[#6b7280] hover:bg-[#f3f4f6] transition">
-                        {copied === qr.token ? <><Check className="w-3 h-3 text-emerald-600" /> Copied</> : <><Copy className="w-3 h-3" /> Copy Link</>}
+                        {copied === qr.token ? <><Check className="w-3 h-3 text-emerald-700" /> Copied</> : <><Copy className="w-3 h-3" /> Copy Link</>}
                       </button>
                     </div>
                   </div>
@@ -272,7 +272,7 @@ export default function QRCodesManager() {
                       </div>
                       {qr.booking?.guestCount && (
                         <div className="text-center">
-                          <p className={`text-xl font-bold ${qr.total_guests > qr.booking.guestCount ? 'text-red-600' : 'text-emerald-600'}`}>
+                          <p className={`text-xl font-bold ${qr.total_guests > qr.booking.guestCount ? 'text-red-600' : 'text-emerald-700'}`}>
                             {qr.booking.guestCount}
                           </p>
                           <p className="text-[0.72rem] text-[#6b7280] uppercase tracking-wider">Expected</p>
@@ -332,7 +332,7 @@ export default function QRCodesManager() {
                                 </td>
                                 <td className="px-4 py-3">
                                   <button onClick={() => deleteRsvp(qr.token, r.id)}
-                                    className="p-1 text-[#6b7280] hover:text-red-500 hover:bg-red-50 rounded transition">
+                                    className="p-1 text-[#6b7280] hover:text-red-600 hover:bg-red-50 rounded transition">
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </td>

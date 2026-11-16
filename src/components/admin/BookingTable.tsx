@@ -28,10 +28,10 @@ interface Booking {
 interface Props { initialBookings: Booking[]; openNew?: boolean; }
 
 const statusStyle = (s: string) =>
-  s === 'paid'    ? 'bg-emerald-500 text-white' :
-  s === 'partial' ? 'bg-amber-500 text-white' :
-  s === 'owe'     ? 'bg-blue-500 text-white' :
-                    'bg-red-500 text-white';
+  s === 'paid'    ? 'bg-emerald-700 text-white' :
+  s === 'partial' ? 'bg-amber-700 text-white' :
+  s === 'owe'     ? 'bg-blue-600 text-white' :
+                    'bg-red-600 text-white';
 
 const statusLabel = (s: string) =>
   s === 'paid' ? 'Paid' : s === 'partial' ? 'Partial' : s === 'owe' ? 'Owes Refund' : 'Unpaid';

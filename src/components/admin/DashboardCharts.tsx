@@ -48,7 +48,7 @@ export function MonthRevenueCard({ monthly }: { monthly: MonthRow[] }) {
           const h = m.revenue > 0 ? Math.max((m.revenue / max) * AREA, 4) : 2;
           return (
             <a key={m.key} href={`/admin/?month=${m.key}&from=dashboard`}
-               aria-label={`${m.month} revenue ${money(m.revenue)}. Show bookings for ${m.month}`}
+               aria-label={`${m.month} ${moneyK(m.revenue)}. Show bookings for ${m.month}`}
                className="flex-1 min-w-0 flex flex-col items-center gap-1.5 rounded-md hover:bg-[#f9fafb] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#374151] transition">
               <span className="text-[0.7rem] font-medium text-[#374151]">{moneyK(m.revenue)}</span>
               <div className="w-full flex items-end" style={{ height: `${AREA}px` }}>
@@ -143,7 +143,7 @@ export function EventTypeCard({ typeRows }: { typeRows: TypeRow[] }) {
                     <div className="flex items-center gap-2 text-sm">
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: SEGMENT[i % SEGMENT.length] }} />
                       <span className="text-[#374151] truncate">{sl.label}</span>
-                      <span className="text-xs text-[#9ca3af]">({sl.count})</span>
+                      <span className="text-xs text-[#6b7280]">({sl.count})</span>
                       <span className="ml-auto font-semibold text-[#111827]">{moneyK(sl.value)}</span>
                       <span className="w-10 text-right text-[#6b7280]">{pct}%</span>
                     </div>

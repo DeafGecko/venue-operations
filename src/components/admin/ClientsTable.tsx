@@ -121,8 +121,8 @@ export default function ClientsTable() {
                   <td className="px-4 py-3 text-sm text-[#6b7280]">{c.phone || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
-                      <button type="button" onClick={() => openEdit(c)} className="p-1.5 rounded-md text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6] transition"><Edit className="w-3.5 h-3.5" /></button>
-                      <button type="button" onClick={() => setDeleteTarget(c)} className="p-1.5 rounded-md text-[#6b7280] hover:text-red-600 hover:bg-red-50 transition"><Trash2 className="w-3.5 h-3.5" /></button>
+                      <button type="button" aria-label="Edit" onClick={() => openEdit(c)} className="p-1.5 rounded-md text-[#6b7280] hover:text-[#374151] hover:bg-[#f3f4f6] transition"><Edit className="w-3.5 h-3.5" /></button>
+                      <button type="button" aria-label="Delete" onClick={() => setDeleteTarget(c)} className="p-1.5 rounded-md text-[#6b7280] hover:text-red-600 hover:bg-red-50 transition"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
                   </td>
                 </tr>

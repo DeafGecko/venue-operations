@@ -191,7 +191,7 @@ export default function UsersTable() {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.72rem] font-medium ${user.isActive ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
+                    <span className={`inline-flex justify-center min-w-22 px-2 py-0.5 rounded-full text-[0.72rem] font-medium ${user.isActive ? 'bg-emerald-700 text-white' : 'bg-red-600 text-white'}`}>
                       {user.isActive ? 'Active' : 'Blocked'}
                     </span>
                   </td>
@@ -215,7 +215,7 @@ export default function UsersTable() {
                       <button
                         onClick={() => handleToggleBlock(user._id, user.isActive)}
                         title={user.isActive ? 'Block user' : 'Unblock user'}
-                        className={`p-1.5 rounded-md transition ${user.isActive ? 'text-[#6b7280] hover:text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50'}`}
+                        className={`p-1.5 rounded-md transition ${user.isActive ? 'text-[#6b7280] hover:text-red-600 hover:bg-red-50' : 'text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50'}`}
                       >
                         <Shield className="w-3.5 h-3.5" />
                       </button>

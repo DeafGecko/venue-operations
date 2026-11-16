@@ -232,8 +232,8 @@ export default function FloorManager() {
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.72rem] font-semibold ${
                     floor.isArchived ? 'bg-[#6b7280] text-white'
-                    : floor.isAvailable ? 'bg-emerald-500 text-white'
-                    : 'bg-red-500 text-white'
+                    : floor.isAvailable ? 'bg-emerald-700 text-white'
+                    : 'bg-red-600 text-white'
                   }`}>
                     {floor.isArchived
                       ? <><Package className="w-3 h-3" /> Archived</>
@@ -251,7 +251,7 @@ export default function FloorManager() {
                   <div className="flex items-center gap-1">
                     {floor.isArchived ? (
                       <button type="button" title="Restore" onClick={() => handleRestore(floor._id)}
-                        className="p-1.5 rounded-md text-emerald-600 hover:bg-emerald-50 transition">
+                        className="p-1.5 rounded-md text-emerald-700 hover:bg-emerald-50 transition">
                         <RotateCcw className="w-3.5 h-3.5" />
                       </button>
                     ) : (
@@ -261,7 +261,7 @@ export default function FloorManager() {
                           <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button type="button" title="Archive" onClick={() => handleArchive(floor._id, floor.code)}
-                          className="p-1.5 rounded-md text-[#6b7280] hover:text-amber-600 hover:bg-amber-50 transition">
+                          className="p-1.5 rounded-md text-[#6b7280] hover:text-amber-700 hover:bg-amber-50 transition">
                           <Archive className="w-3.5 h-3.5" />
                         </button>
                       </>

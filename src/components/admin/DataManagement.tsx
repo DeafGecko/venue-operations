@@ -123,9 +123,9 @@ export default function DataManagement() {
   };
 
   const actionColor: Record<string, string> = {
-    import: 'text-emerald-600',
+    import: 'text-emerald-700',
     export: 'text-blue-600',
-    delete: 'text-red-500',
+    delete: 'text-red-600',
   };
   const actionLabel: Record<string, string> = { import: 'Imported', export: 'Exported', delete: 'Deleted' };
 

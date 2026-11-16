@@ -72,3 +72,34 @@ export async function sendPasswordResetEmail({ to, name, resetUrl, venueName }: 
 
   if (error) throw new Error(`Email send failed: ${error.message}`);
 }
+
+interface AccessRequestEmailParams {
+  to: string;
+  page: string;
+  name: string;
+  note: string;
+}
+
+// Sent to the developer when a visitor asks for the access code for a locked page.
+export async function sendAccessRequestEmail({ to, page, name, note }: AccessRequestEmailParams, apiKey: string, fromEmail?: string) {
+  if (!apiKey) throw new Error('RESEND_API_KEY is not configured');
+
+  const resend = new Resend(apiKey);
+  fromEmail = fromEmail || 'onboarding@resend.dev';
+
+  const { error } = await resend.emails.send({
+    from: `Venue Operations <${fromEmail}>`,
+    to,
+    subject: `Access code request: ${page}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2>Access code request</h2>
+        <p>Someone asked for the access code to view <strong>${page}</strong>.</p>
+        <p><strong>Name:</strong> ${name || 'Not given'}</p>
+        <p><strong>Note:</strong> ${note || 'None'}</p>
+      </div>
+    `,
+  });
+
+  if (error) throw new Error(error.message);
+}
